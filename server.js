@@ -99,7 +99,7 @@ app.get('/sheets/:username/:password', (req, res) => {
             res.json({ error: err });
         } else {
             let person = peopleFound[0];
-            res.json({ username: person.username, _id: person.id, sheets: person.sheets});
+            res.json({ username: person.username, _id: person._id, sheets: person.sheets});
         }
     });
 });
