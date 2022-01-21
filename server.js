@@ -91,7 +91,7 @@ app.get('/login/:username/:password', (req, res) => {
     });
 });
 
-app.get('/api/userSheets/:username/:password', (req, res) => {
+app.get('/sheets/:username/:password', (req, res) => {
     User.find({ username: username, password: password}, (err, person) => {
         if (err) {
             res.json({ error: err });
