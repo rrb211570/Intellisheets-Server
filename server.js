@@ -91,27 +91,14 @@ app.get('/login/:username/:password', (req, res) => {
     });
 });
 
-app.get('/api/userSheets/', (req, res) => {
-    res.send({ params: 'huh' });
-    /*let user = User({
-        username: req.params.user,
-        sheets: []
-    });
-    
-    user.save((err, newUser) => {
+app.get('/api/userSheets/:username/:password', (req, res) => {
+    User.find({ username: username, password: password}, (err, person) => {
         if (err) {
-            console.log('Error: newUser(): save(): ' + err);
             res.json({ error: err });
         } else {
-            User.findById(newUser._id, function (err, pers) {
-                if (err) {
-                    console.log('Error: newUser(): findById(): ' + err);
-                    res.json({ error: err });
-                } else res.json({ username: pers.username, _id: pers._id, sheets: pers.sheets });
-            });
+            res.json({ username: person.username, _id: person.id, sheets: person.sheets});
         }
-    });*/
-    //res.json({ username: req.params.user, _id: 148, sheets: [] })
+    });
 });
 
 app.post('/api/users/:_username/sheetPreview', (req, res) => {
