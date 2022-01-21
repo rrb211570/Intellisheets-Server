@@ -94,10 +94,11 @@ app.get('/login/:username/:password', (req, res) => {
 app.get('/sheets/:username/:password', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
-    User.find({ username: username, password: password}, (err, person) => {
-        if (err) {
+    User.find({ username: username, password: password}, (err, peopleFound) => {
+        if (err||peopleFound.length!=1) {
             res.json({ error: err });
         } else {
+            let person = peopleFound[0];
             res.json({ username: person.username, _id: person.id, sheets: person.sheets});
         }
     });
