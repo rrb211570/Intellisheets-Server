@@ -105,6 +105,7 @@ app.get('/sheets/:username/:password', (req, res) => {
 });
 
 app.post('/sheet/save/:username/:password/:sheetID', (req, res) => {
+    res.json({madeit: 'madeit'});/*
     let username = req.params.username;
     let password = req.params.password;
     User.find({ username: username, password: password }, (err, peopleFound) => {
@@ -116,7 +117,7 @@ app.post('/sheet/save/:username/:password/:sheetID', (req, res) => {
                 saveStatus: 'saved'
             });
         }
-    });
+    });*/
 });
 
 app.get('/sheet/load/:username/:password/:sheetID', (req, res) => {
