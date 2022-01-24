@@ -54,7 +54,7 @@ app.get('/newuser/:username/:password', (req, res) => {
         if (err) {
             res.json({ error: err });
         } else {
-            if(peopleFound.length==0){
+            if (peopleFound.length == 0) {
                 let user = User({
                     username: username,
                     password: req.params.password,
@@ -73,7 +73,7 @@ app.get('/newuser/:username/:password', (req, res) => {
                         });
                     }
                 })
-            } else res.json({usernameAvailable: false})
+            } else res.json({ usernameAvailable: false })
         }
     });
 });
@@ -81,12 +81,12 @@ app.get('/newuser/:username/:password', (req, res) => {
 app.get('/login/:username/:password', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
-    User.find({ username: username, password: password}, (err, peopleFound) => {
+    User.find({ username: username, password: password }, (err, peopleFound) => {
         if (err) {
             res.json({ error: err });
         } else {
-            if(peopleFound.length==0) res.json({ validCredentials: false });
-            else res.json({validCredentials: true})
+            if (peopleFound.length == 0) res.json({ validCredentials: false });
+            else res.json({ validCredentials: true })
         }
     });
 });
@@ -94,22 +94,35 @@ app.get('/login/:username/:password', (req, res) => {
 app.get('/sheets/:username/:password', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
-    User.find({ username: username, password: password}, (err, peopleFound) => {
-        if (err||peopleFound.length!=1) {
+    User.find({ username: username, password: password }, (err, peopleFound) => {
+        if (err || peopleFound.length != 1) {
             res.json({ error: err });
         } else {
             let person = peopleFound[0];
-            res.json({ username: person.username, _id: person._id, sheets: person.sheets});
+            res.json({ username: person.username, _id: person._id, sheets: person.sheets });
         }
     });
 });
 
-app.post('/api/users/:_username/sheetPreview', (req, res) => {
-    let user = User({
-        username: req.body.username,
-        sheets: []
+app.post('/sheet/save/:username/:password/:sheetID', (req, res) => {
+    let username = req.params.username;
+    let password = req.params.password;
+    User.find({ username: username, password: password }, (err, foundUser) => {
+        if (err) {
+            console.log('Error: sheetPreview(): findOne(): ' + err);
+            res.json({ error: err });
+        } else {
+            res.json({
+                saveStatus: 'saved'
+            });
+        }
     });
-    user.findOne({ sessionToken: req.body.sessionToken }, (err, newUser) => {
+});
+
+app.get('/sheet/load/:username/:password/:sheetID', (req, res) => {
+    let username = req.params.username;
+    let password = req.params.password;
+    User.find({ username: username, password: password }, (err, newUser) => {
         if (err) {
             console.log('Error: sheetPreview(): findOne(): ' + err);
             res.json({ error: err });
