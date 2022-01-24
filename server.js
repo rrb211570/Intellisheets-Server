@@ -107,8 +107,8 @@ app.get('/sheets/:username/:password', (req, res) => {
 app.post('/sheet/save/:username/:password/:sheetID', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
-    User.find({ username: username, password: password }, (err, foundUser) => {
-        if (err) {
+    User.find({ username: username, password: password }, (err, peopleFound) => {
+        if (err || peopleFound.length != 1) {
             console.log('Error: sheetPreview(): findOne(): ' + err);
             res.json({ error: err });
         } else {
