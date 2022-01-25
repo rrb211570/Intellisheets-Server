@@ -106,7 +106,7 @@ app.get('/sheets/:username/:password', (req, res) => {
 
 app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
     let username = req.params.username;
-    res.json({madeit: 'madeit'});/*
+    res.send('madeit');/*
     let username = req.params.username;
     let password = req.params.password;
     User.find({ username: username, password: password }, (err, peopleFound) => {
