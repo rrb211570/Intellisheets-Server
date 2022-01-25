@@ -104,7 +104,8 @@ app.get('/sheets/:username/:password', (req, res) => {
     });
 });
 
-app.post('/sheet/save/:username/:password/:sheetID', (req, res) => {
+app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
+    let username = req.params.username;
     res.json({madeit: 'madeit'});/*
     let username = req.params.username;
     let password = req.params.password;
