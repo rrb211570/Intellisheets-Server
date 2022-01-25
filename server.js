@@ -106,8 +106,6 @@ app.get('/sheets/:username/:password', (req, res) => {
 
 app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
     let username = req.params.username;
-    res.send('madeit');/*
-    let username = req.params.username;
     let password = req.params.password;
     User.find({ username: username, password: password }, (err, peopleFound) => {
         if (err || peopleFound.length != 1) {
@@ -118,7 +116,7 @@ app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
                 saveStatus: 'saved'
             });
         }
-    });*/
+    });
 });
 
 app.get('/sheet/load/:username/:password/:sheetID', (req, res) => {
