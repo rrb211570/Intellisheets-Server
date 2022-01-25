@@ -114,7 +114,7 @@ app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
         } else {
             res.json({
                 saveStatus: 'saved',
-                dat: req.body.collectedData
+                dat: req.body.exposedCollectedData
             });
         }
     });
