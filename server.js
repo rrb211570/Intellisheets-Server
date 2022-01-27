@@ -28,6 +28,7 @@ let userSchema = new Schema({
     sheets: [
         {
             id: String,
+            title: String,
             rows: String,
             cols: String,
             dateCreated: String,
@@ -43,8 +44,7 @@ let userSchema = new Schema({
                 }]
             }]
         }
-    ],
-    latestSheetID: String
+    ]
 });
 let User = mongoose.model('User', userSchema);
 
@@ -99,7 +99,36 @@ app.get('/sheets/:username/:password', (req, res) => {
             res.json({ error: err });
         } else {
             let person = peopleFound[0];
-            res.json({ username: person.username, _id: person._id, sheets: person.sheets });
+            let sheetPreviews = [];
+            for(const sheet of person.sheets) sheetPreviews.push([sheet.id, sheet.title]);
+            res.json({ username: person.username, _id: person._id, sheetPreviews: sheetPreviews });
+        }
+    });
+});
+
+app.post('/createSheet/:username/:password', (req, res) => {
+    User.find({ username: username, password: password }, (err, peopleFound) => {
+        if (err || peopleFound.length != 1) {
+            res.json({ error: err });
+        } else {
+            let newSheet = {
+                id: peopleFound[0].sheets.length,
+                rows: req.body.rows,
+                cols: req.body.cols,
+                dateCreated: getDate(),
+                dateModified: getDate(),
+                data: []
+            }
+            let modifiedSheets = [...peopleFound[0].sheets, newSheet];
+            User.updateOne({ username: username, password: password }, { sheets: modifiedSheets }, (err, status) => {
+                if (err) {
+                    res.json({ error: err })
+                } else {
+                    res.json({
+                        status: 'created sheet',
+                    });
+                }
+            });
         }
     });
 });
@@ -107,20 +136,30 @@ app.get('/sheets/:username/:password', (req, res) => {
 app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
+    let sheetID = req.params.sheetID;
+    let receivedData = req.body.exposedCollectedData;
     User.find({ username: username, password: password }, (err, peopleFound) => {
         if (err || peopleFound.length != 1) {
             console.log('Error: sheetPreview(): findOne(): ' + err);
             res.json({ error: err });
         } else {
-            res.json({
-                saveStatus: 'saved',
-                dat: req.body.exposedCollectedData
+            let modifiedSheets = updateSheets(peopleFound[0].sheets, receivedData, sheetID);
+            if(modifiedSheets==null) res.json({ error: 'API Error: ...saveSheet : sheetID not found' });
+            User.updateOne({ username: username, password: password }, { sheets: modifiedSheets }, (err, status) => {
+                if (err) {
+                    res.json({ error: err })
+                } else {
+                    res.json({
+                        status: 'saved sheet',
+                        dat: receivedData
+                    });
+                }
             });
         }
     });
 });
 
-app.get('/sheet/load/:username/:password/:sheetID', (req, res) => {
+app.get('/loadSheet/:username/:password/:sheetID', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
     User.find({ username: username, password: password }, (err, newUser) => {
@@ -145,30 +184,47 @@ app.get('/sheet/load/:username/:password/:sheetID', (req, res) => {
     });
 });
 
-app.post('/users/:_username/:_sheetID', (req, res) => {
-    let user = User({
-        username: req.body.username,
-        sheets: []
+function updateSheets(dbSheets, receivedData, sheetID) {
+    let ret = dbSheets.map(sheet => {
+        if (sheet.id == sheetID) {
+            sheet.dateModified = getDate();
+            let dbData = sheet.data;
+            let newEntries = [];
+            for (const receivedEntry of receivedData) {
+                let found = false;
+                for (let dbEntry of dbData) {
+                    if (dbEntry.entryKey == receivedEntry.entryKey) {
+                        found = true;
+                        copyVal(dbEntry, receivedEntry);
+                        copyStyleMap(dbEntry.styleMap, receivedEntry.styleMap);
+                    }
+                }
+                if (!found) newEntries.push(receivedEntry)
+            }
+            sheet.data = [...dbData, ...newEntries];
+        } else return null;
+        return sheet;
     });
-    user.findOne({ sessionToken: req.body.sessionToken }, (err, newUser) => {
-        if (err) {
-            console.log('Error: sheetPreview(): findOne(): ' + err);
-            res.json({ error: err });
-        } else {
-            User.findById(newUser._id, function (err, pers) {
-                if (err) {
-                    console.log('Error: sheetPreview(): findById(): ' + err);
-                    res.json({ error: err });
-                } else res.json({
-                    username: pers.username, _id: pers._id, sheetPreviews: pers.sheets.map((sheet) => {
-                        return {
-                            title: sheet.title,
-                            id: sheet.id
-                        }
-                    })
-                });
-            });
-        }
-    });
-});
+    return ret;
+}
 
+function getDate() {
+    let today = new Date();
+    let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    return date + ' ' + time;
+}
+
+function copyVal(dbEntry, receivedEntry) {
+    dbEntry.val = receivedEntry.val;
+}
+
+function copyStyleMap(dbEntryStyleMap, receivedEntryStyleMap) {
+    for (const receivedEntryStylePair of receivedEntryStyleMap) {
+        for (let dbEntryStylePair of dbEntryStyleMap) {
+            if (dbEntryStylePair.property == receivedEntryStylePair.property) {
+                dbEntryStylePair.value == receivedEntryStylePair.value;
+            }
+        }
+    }
+}
