@@ -100,7 +100,7 @@ app.get('/sheets/:username/:password', (req, res) => {
         } else {
             let person = peopleFound[0];
             let sheetPreviews = [];
-            for (const sheet of person.sheets) sheetPreviews.push([sheet.id, sheet.title]);
+            for (const sheet of person.sheets) sheetPreviews.push({id: sheet.id, title: sheet.title});
             res.json({ username: person.username, _id: person._id, sheetPreviews: sheetPreviews });
         }
     });
