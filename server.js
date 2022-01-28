@@ -100,7 +100,7 @@ app.get('/sheets/:username/:password', (req, res) => {
         } else {
             let person = peopleFound[0];
             let sheetPreviews = [];
-            for(const sheet of person.sheets) sheetPreviews.push([sheet.id, sheet.title]);
+            for (const sheet of person.sheets) sheetPreviews.push([sheet.id, sheet.title]);
             res.json({ username: person.username, _id: person._id, sheetPreviews: sheetPreviews });
         }
     });
@@ -125,7 +125,7 @@ app.post('/createSheet/:username/:password', (req, res) => {
                     res.json({ error: err })
                 } else {
                     res.json({
-                        status: 'created sheet',
+                        status: 'NEW_SHEET',
                     });
                 }
             });
@@ -144,7 +144,7 @@ app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
             res.json({ error: err });
         } else {
             let modifiedSheets = updateSheets(peopleFound[0].sheets, receivedData, sheetID);
-            if(modifiedSheets==null) res.json({ error: 'API Error: ...saveSheet : sheetID not found' });
+            if (modifiedSheets == null) res.json({ error: 'API Error: ...saveSheet : sheetID not found' });
             User.updateOne({ username: username, password: password }, { sheets: modifiedSheets }, (err, status) => {
                 if (err) {
                     res.json({ error: err })
