@@ -115,8 +115,9 @@ app.get('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
         if (err || peopleFound.length != 1) {
             res.json({ error: err });
         } else {
+            let newSheetID = peopleFound[0].sheets.length;
             let newSheet = {
-                id: peopleFound[0].sheets.length,
+                id: newSheetID,
                 rows: rows,
                 cols: cols,
                 dateCreated: getDate(),
@@ -130,6 +131,7 @@ app.get('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
                 } else {
                     res.json({
                         status: 'NEW_SHEET',
+                        newSheetID: newSheetID
                     });
                 }
             });
