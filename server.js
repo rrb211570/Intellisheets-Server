@@ -106,15 +106,19 @@ app.get('/sheets/:username/:password', (req, res) => {
     });
 });
 
-app.post('/createSheet/:username/:password', (req, res) => {
+app.post('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
+    let username = req.params.username;
+    let password = req.params.password;
+    let rows = req.params.rows;
+    let cols = req.params.cols;
     User.find({ username: username, password: password }, (err, peopleFound) => {
         if (err || peopleFound.length != 1) {
             res.json({ error: err });
         } else {
             let newSheet = {
                 id: peopleFound[0].sheets.length,
-                rows: req.body.rows,
-                cols: req.body.cols,
+                rows: rows,
+                cols: cols,
                 dateCreated: getDate(),
                 dateModified: getDate(),
                 data: []
