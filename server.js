@@ -118,6 +118,7 @@ app.get('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
             let newSheetID = peopleFound[0].sheets.length;
             let newSheet = {
                 id: newSheetID,
+                title: 'Untitled',
                 rows: rows,
                 cols: cols,
                 dateCreated: getDate(),
