@@ -138,31 +138,6 @@ app.get('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
     });
 });
 
-app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
-    let username = req.params.username;
-    let password = req.params.password;
-    let sheetID = req.params.sheetID;
-    let receivedData = req.body.exposedCollectedData;
-    User.find({ username: username, password: password }, (err, peopleFound) => {
-        if (err || peopleFound.length != 1) {
-            res.json({ error: err });
-        } else {
-            let modifiedSheets = updateSheets(peopleFound[0].sheets, receivedData, sheetID);
-            if (modifiedSheets == null) res.json({ error: 'API Error: ...saveSheet : sheetID not found' });
-            User.updateOne({ username: username, password: password }, { sheets: modifiedSheets }, (err, status) => {
-                if (err) {
-                    res.json({ error: err })
-                } else {
-                    res.json({
-                        status: 'saved sheet',
-                        dat: receivedData
-                    });
-                }
-            });
-        }
-    });
-});
-
 app.get('/loadSheet/:username/:password/:sheetID', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
@@ -184,6 +159,31 @@ app.get('/loadSheet/:username/:password/:sheetID', (req, res) => {
             }
             if(payload.entries().length==0) res.json({error: 'loadSheet(): payload is empty'});
             else res.json(Object.assign({}, payload));
+        }
+    });
+});
+
+app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
+    let username = req.params.username;
+    let password = req.params.password;
+    let sheetID = req.params.sheetID;
+    let receivedData = req.body.exposedCollectedData;
+    User.find({ username: username, password: password }, (err, peopleFound) => {
+        if (err || peopleFound.length != 1) {
+            res.json({ error: err });
+        } else {
+            let modifiedSheets = updateSheets(peopleFound[0].sheets, receivedData, sheetID);
+            if (modifiedSheets == null) res.json({ error: 'API Error: ...saveSheet : sheetID not found' });
+            User.updateOne({ username: username, password: password }, { sheets: modifiedSheets }, (err, status) => {
+                if (err) {
+                    res.json({ error: err })
+                } else {
+                    res.json({
+                        status: 'saved sheet',
+                        dat: receivedData
+                    });
+                }
+            });
         }
     });
 });
