@@ -106,7 +106,7 @@ app.get('/sheets/:username/:password', (req, res) => {
     });
 });
 
-app.post('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
+app.get('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
     let rows = req.params.rows;
