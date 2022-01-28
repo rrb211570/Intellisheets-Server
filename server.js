@@ -62,12 +62,10 @@ app.get('/newuser/:username/:password', (req, res) => {
                 });
                 user.save((err, newUser) => {
                     if (err) {
-                        console.log('Error: newUser(): save(): ' + err);
                         res.json({ error: err });
                     } else {
                         User.findById(newUser._id, function (err, pers) {
                             if (err) {
-                                console.log('Error: newUser(): findById(): ' + err);
                                 res.json({ error: err });
                             } else res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets });
                         });
@@ -100,7 +98,7 @@ app.get('/sheets/:username/:password', (req, res) => {
         } else {
             let person = peopleFound[0];
             let sheetPreviews = [];
-            for (const sheet of person.sheets) sheetPreviews.push({id: sheet.id, title: sheet.title});
+            for (const sheet of person.sheets) sheetPreviews.push({ id: sheet.id, title: sheet.title });
             res.json({ username: person.username, _id: person._id, sheetPreviews: sheetPreviews });
         }
     });
@@ -147,7 +145,6 @@ app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
     let receivedData = req.body.exposedCollectedData;
     User.find({ username: username, password: password }, (err, peopleFound) => {
         if (err || peopleFound.length != 1) {
-            console.log('Error: sheetPreview(): findOne(): ' + err);
             res.json({ error: err });
         } else {
             let modifiedSheets = updateSheets(peopleFound[0].sheets, receivedData, sheetID);
@@ -169,24 +166,24 @@ app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
 app.get('/loadSheet/:username/:password/:sheetID', (req, res) => {
     let username = req.params.username;
     let password = req.params.password;
-    User.find({ username: username, password: password }, (err, newUser) => {
-        if (err) {
-            console.log('Error: sheetPreview(): findOne(): ' + err);
+    let sheetID = req.params.sheetID;
+    User.find({ username: username, password: password }, (err, peopleFound) => {
+        if (err || peopleFound.length != 1) {
             res.json({ error: err });
         } else {
-            User.findById(newUser._id, function (err, pers) {
-                if (err) {
-                    console.log('Error: sheetPreview(): findById(): ' + err);
-                    res.json({ error: err });
-                } else res.json({
-                    username: pers.username, _id: pers._id, sheetPreviews: pers.sheets.map((sheet) => {
-                        return {
-                            title: sheet.title,
-                            id: sheet.id
-                        }
-                    })
-                });
-            });
+            let payload = {};
+            let dbEntrySheets = peopleFound[0].sheets;
+            for (let i = 0; i < dbEntrySheets.length; ++i) {
+                if (dbEntrySheets[i].id == sheetID) {
+                    payload.title = dbEntrySheets[i].title;
+                    payload.rows = dbEntrySheets[i].rows;
+                    payload.cols = dbEntrySheets[i].cols;
+                    payload.data = dbEntrySheets[i].data;
+                    break;
+                }
+            }
+            if(payload.entries().length==0) res.json({error: 'loadSheet(): payload is empty'});
+            else res.json(payload);
         }
     });
 });
