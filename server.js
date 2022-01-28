@@ -157,8 +157,11 @@ app.get('/loadSheet/:username/:password/:sheetID', (req, res) => {
                     break;
                 }
             }
-            if(!payload.hasOwnProperty('title')) res.json({error: 'loadSheet(): payload is empty'});
-            else res.json(Object.assign({}, payload));
+            if (!payload.hasOwnProperty('title')) res.json({ error: 'loadSheet(): payload is empty' });
+            else {
+                payload.status == 'OPEN_SHEET';
+                res.json(Object.assign({}, payload));
+            }
         }
     });
 });
