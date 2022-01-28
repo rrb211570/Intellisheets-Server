@@ -157,7 +157,7 @@ app.get('/loadSheet/:username/:password/:sheetID', (req, res) => {
                     break;
                 }
             }
-            if(payload.entries().length==0) res.json({error: 'loadSheet(): payload is empty'});
+            if(!payload.hasOwnProperty('title')) res.json({error: 'loadSheet(): payload is empty'});
             else res.json(Object.assign({}, payload));
         }
     });
