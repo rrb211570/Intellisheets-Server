@@ -3,7 +3,9 @@ var cors = require('cors');
 const app = express();
 app.use(cors());
 
-require('dotenv').config()
+require('dotenv').config();
+const cookieParser = require("cookie-parser");
+var jwt = require('jsonwebtoken');
 
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({
@@ -25,6 +27,9 @@ const { Schema } = mongoose;
 let userSchema = new Schema({
     username: String,
     password: String,
+    salt: String,
+    hashedPass: String,
+    sessionID: String,
     sheets: [
         {
             id: String,
@@ -55,9 +60,12 @@ app.get('/newuser/:username/:password', (req, res) => {
             res.json({ error: err });
         } else {
             if (peopleFound.length == 0) {
+                let registrationCode = '';
+                for (let i = 0; i < 8; ++i) registrationCode += '' + Math.floor(Math.random() * 10) + '';
                 let user = User({
                     username: username,
                     password: req.params.password,
+                    sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
                 user.save((err, newUser) => {
@@ -67,11 +75,56 @@ app.get('/newuser/:username/:password', (req, res) => {
                         User.findById(newUser._id, function (err, pers) {
                             if (err) {
                                 res.json({ error: err });
-                            } else res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets });
+                            } else {
+                                sendTokenEmail(username, registrationCode)
+                                    .then(res => {
+                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets });
+                                    })
+                                    .catch(err => {
+                                        res.json({ error: err });
+                                    });
+                            }
                         });
                     }
                 })
             } else res.json({ usernameAvailable: false })
+        }
+    });
+});
+
+sendTokenEmail = async (username, registrationCode) => {
+    const response = await fetch('https://api.elasticemail.com/v2/email/send?' +
+        'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
+        '&subject=' + 'Confirm your registration for Intellisheets' +
+        '&from=' + 'credentials@intellisheets.me' +
+        '&fromName=' + 'Intellisheets Credentials' +
+        '&to=' + username +
+        '&bodyHTML=' + '<h1>Here is your access token: ' + registrationCode + '</h1>' +
+        '&isTransactional=' + 'true'
+    );
+    const body = await response.json();
+    if (response.status !== 200) {
+        throw Error(body.error)
+    }
+    return body;
+}
+
+app.get('tokenconfirm/:username/:registrationCode', (req, res) => {
+    let username = req.params.username;
+    let registrationCode = req.params.registrationCode;
+    User.find({ username: username }, (err, peopleFound) => {
+        if (err) {
+            res.json({ error: err });
+        } else {
+            if (peopleFound.length != 1) {
+                res.json({ error: 'tokenconfirm: peopleFound != 1' });
+            } else {
+                let user = peopleFound[0];
+                if (user.sessionID == registrationCode) {
+                    // hash (pass + salt) into hashedPass
+                    res.json({ JWT: createJWT() }); // check
+                } else res.json({ status: 'fail', reason: 'invalid token' });
+            }
         }
     });
 });
@@ -84,10 +137,14 @@ app.get('/login/:username/:password', (req, res) => {
             res.json({ error: err });
         } else {
             if (peopleFound.length == 0) res.json({ validCredentials: false });
-            else res.json({ validCredentials: true })
+            else res.json({ validCredentials: true, JWT: createJWT() }) // check
         }
     });
 });
+
+function createJWT() {
+    // check
+}
 
 app.get('/sheets/:username/:password', (req, res) => {
     let username = req.params.username;
