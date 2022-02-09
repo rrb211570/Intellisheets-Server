@@ -61,7 +61,7 @@ app.get('/newuser/:username/:password', (req, res) => {
         } else {
             if (peopleFound.length == 0) {
                 let registrationCode = '';
-                for (let i = 0; i < 8; ++i) registrationCode += '' + Math.floor(Math.random() * 10) + '';
+                for (let i = 0; i < 8; ++i) registrationCode = registrationCode + Math.floor(Math.random() * 10) + '';
                 let user = User({
                     username: username,
                     password: req.params.password,
@@ -99,7 +99,7 @@ sendTokenEmail = async (username, registrationCode) => {
         '&from=' + 'credentials@intellisheets.me' +
         '&fromName=' + 'Intellisheets Credentials' +
         '&to=' + username +
-        '&bodyHTML=' + '<h1>Here is your access token: ' + registrationCode + '</h1>' +
+        '&bodyHTML=' + '<h1>Here is your registration code: ' + registrationCode + '</h1>' +
         '&isTransactional=' + 'true'
     );
     const body = await response.json();
