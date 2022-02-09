@@ -98,8 +98,8 @@ sendTokenEmail = async (username, registrationCode) => {
         '&subject=' + 'Confirm your registration for Intellisheets' +
         '&from=' + 'credentials@intellisheets.me' +
         '&fromName=' + 'Intellisheets Credentials' +
-        `&to=${username}`+
-        '&bodyHTML=' + `<h1>Here is your registration code: ${registrationCode}</h1>` +
+        '&to=rbandi211570@gmail.com'+
+        '&bodyHTML=' + '<h1>Here is your registration code: b</h1>' +
         '&isTransactional=' + 'true'
     );
     const body = await response.json();
