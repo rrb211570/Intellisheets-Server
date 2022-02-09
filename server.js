@@ -78,7 +78,7 @@ app.get('/newuser/:username/:password', (req, res) => {
                             } else {
                                 sendTokenEmail(username, registrationCode)
                                     .then(blah=>{
-                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
+                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode, ret: blah})
                                     })
                                     .catch(err => {
                                         res.json({ error: err, user: username, code: registrationCode});
@@ -98,13 +98,13 @@ sendTokenEmail = async (username, registrationCode) => {
         '&subject=' + 'Confirm your registration for Intellisheets' +
         '&from=' + 'credentials@intellisheets.me' +
         '&fromName=' + 'Intellisheets Credentials' +
-        '&to=rbandi211570@gmail.com'+
-        '&bodyHTML=' + '<h1>Here is your registration code: b</h1>' +
+        `&to=${username}`+
+        '&bodyHTML=' + `<h1>Here is your registration code: ${registrationCode}</h1>` +
         '&isTransactional=' + 'true'
     );
     const body = await response.json();
     if (response.status !== 200) {
-        throw Error(body.error)
+        return body.error;
     }
     return body;
 }
