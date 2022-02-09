@@ -57,7 +57,7 @@ app.get('/newuser/:username/:password', (req, res) => {
     let username = req.params.username;
     User.find({ username: username }, (err, peopleFound) => {
         if (err) {
-            res.json({ aerror: err });
+            res.json({ error: err });
         } else {
             if (peopleFound.length == 0) {
                 let registrationCode = '';
@@ -70,18 +70,18 @@ app.get('/newuser/:username/:password', (req, res) => {
                 });
                 user.save((err, newUser) => {
                     if (err) {
-                        res.json({ derror: err });
+                        res.json({ error: err });
                     } else {
                         User.findById(newUser._id, function (err, pers) {
                             if (err) {
-                                res.json({ zerror: err });
+                                res.json({ error: err });
                             } else {
                                 sendTokenEmail(username, registrationCode)
                                     .then(blah=>{
                                         res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
                                     })
                                     .catch(err => {
-                                        res.json({ ferror: err });
+                                        res.json({ error: err, user: username, code: registrationCode});
                                     });
                             }
                         });
