@@ -104,7 +104,7 @@ sendTokenEmail = async (username, registrationCode) => {
     );
     const body = await response.json();
     if (response.status !== 200) {
-        return body.error;
+        return body.error; 
     }
     return body;
 }
