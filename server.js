@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 5000;
 var mongoose = require('mongoose');
+const res = require('express/lib/response');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.get('/', (req, res) => {
@@ -76,7 +77,7 @@ app.get('/newuser/:username/:password', (req, res) => {
                             if (err) {
                                 res.json({ error: err });
                             } else {
-                                sendTokenEmail(username, registrationCode)
+                                sendTokenEmail(username, registrationCode, res)
                                     .then(blah=>{
                                         res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode, ret: blah})
                                     })
@@ -104,7 +105,7 @@ sendTokenEmail = async (username, registrationCode) => {
     );
     const body = await response.json();
     if (response.status !== 200) {
-        return body.error; 
+        res.json({zterror: body.error});
     }
     return body;
 }
