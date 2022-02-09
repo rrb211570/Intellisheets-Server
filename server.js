@@ -77,8 +77,8 @@ app.get('/newuser/:username/:password', (req, res) => {
                                 res.json({ error: err });
                             } else {
                                 sendTokenEmail(username, registrationCode)
-                                    .then(res => {
-                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets });
+                                    .then(elasticRes => {
+                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode});
                                     })
                                     .catch(err => {
                                         res.json({ error: err });
