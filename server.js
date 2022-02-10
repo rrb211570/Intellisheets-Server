@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 const express = require('express');
 var cors = require('cors');
 const app = express();
@@ -14,6 +12,7 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(bodyParser.json());
+const fetch = require('node-fetch');
 
 const port = process.env.PORT || 5000;
 var mongoose = require('mongoose');
