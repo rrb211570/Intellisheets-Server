@@ -68,19 +68,16 @@ app.get('/newuser/:username/:password', (req, res) => {
                     sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
-                try{
+                try {
                     sendTokenEmail(req, res, username, registrationCode)
-                    .then(blah=>{
-                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
-                    })
-                    .catch(err => {
-                        res.json(json.stringify({ error: err, user: username, code: registrationCode}));
-                        console.log('error: ');
-                        console.log(err);
-                        console.log('done');
-                    });
-                }catch(e){
-                    res.json({error: e});
+                        .then(blah => {
+                            res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
+                        })
+                        .catch(err => {
+                            res.json({ error: err, user: username, code: registrationCode });
+                        });
+                } catch (e) {
+                    res.json({ error: e });
                 }
                 /*user.save((err, newUser) => {
                     if (err) {
@@ -106,7 +103,7 @@ sendTokenEmail = async (req, res, username, registrationCode) => {
         '&subject=' + 'Confirm your registration for Intellisheets' +
         '&from=' + 'credentials@intellisheets.me' +
         '&fromName=' + 'Intellisheets Credentials' +
-        `&to=${username}`+
+        `&to=${username}` +
         '&bodyHTML=' + `<h1>Here is your registration code: ${registrationCode}</h1>` +
         '&isTransactional=' + 'true'
     );
