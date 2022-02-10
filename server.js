@@ -75,6 +75,7 @@ app.get('/newuser/:username/:password', (req, res) => {
                         res.json({ usernameAvailable: true, blah: blah })
                     })
                     .catch(err => {
+                        console.log('-----------\n-----------\n----------------\n------------');
                         res.json({ error: err });
                     });
                 /*user.save((err, newUser) => {
