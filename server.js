@@ -68,7 +68,21 @@ app.get('/newuser/:username/:password', (req, res) => {
                     sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
-                user.save((err, newUser) => {
+                try{
+                    sendTokenEmail(req, res, username, registrationCode)
+                    .then(blah=>{
+                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
+                    })
+                    .catch(err => {
+                        res.json(json.stringify({ error: err, user: username, code: registrationCode}));
+                        console.log('error: ');
+                        console.log(err);
+                        console.log('done');
+                    });
+                }catch(e){
+                    res.json({error: e});
+                }
+                /*user.save((err, newUser) => {
                     if (err) {
                         res.json({ error: err });
                     } else {
@@ -76,26 +90,17 @@ app.get('/newuser/:username/:password', (req, res) => {
                             if (err) {
                                 res.json({ error: err });
                             } else {
-                                sendTokenEmail(username, registrationCode)
-                                    .then(blah=>{
-                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
-                                    })
-                                    .catch(err => {
-                                        res.json(json.stringify({ error: err, user: username, code: registrationCode}));
-                                        console.log('error: ');
-                                        console.log(err);
-                                        console.log('done');
-                                    });
+                                // here
                             }
                         });
                     }
-                })
+                })*/
             } else res.json({ usernameAvailable: false })
         }
     });
 });
 
-sendTokenEmail = async (username, registrationCode) => {
+sendTokenEmail = async (req, res, username, registrationCode) => {
     const response = await fetch('https://api.elasticemail.com/v2/email/send?' +
         'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
         '&subject=' + 'Confirm your registration for Intellisheets' +
