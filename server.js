@@ -71,11 +71,11 @@ app.get('/newuser/:username/:password', (req, res) => {
                 });
                 let url = 'https://api.elasticemail.com/v2/email/send?' +
                 'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
-                '&subject=' + 'Confirm your registration for Intellisheets' +
+                '&subject=' + 'Confirm' +
                 '&from=' + 'credentials@intellisheets.me' +
-                '&fromName=' + 'Intellisheets Credentials' +
+                '&fromName=' + 'Intellisheets' +
                 `&to=${username}` +
-                '&bodyHTML=' + `<h1>Here is your registration code: ${registrationCode}</h1>` +
+                '&bodyHTML=' + `<h1>code-${registrationCode}</h1>` +
                 '&isTransactional=' + 'true';
                 sendTokenEmail(url)
                     .then(blah => {
