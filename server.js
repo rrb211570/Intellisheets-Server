@@ -70,20 +70,13 @@ app.get('/newuser/:username/:password', (req, res) => {
                     sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
-                try{
-                    sendTokenEmail(req, res, username, registrationCode)
-                    .then(blah=>{
-                        res.json({ usernameAvailable: true, username: username, elasticRes: blah, code: registrationCode })
+                sendTokenEmail(username, registrationCode)
+                    .then(blah => {
+                        res.json({ usernameAvailable: true, blah: blah })
                     })
                     .catch(err => {
-                        res.json({error: err});
-                        console.log('error: ');
-                        console.log(err);
-                        console.log('done');
+                        res.json({ error: err });
                     });
-                }catch(e){
-                    res.json({error: e});
-                }
                 /*user.save((err, newUser) => {
                     if (err) {
                         res.json({ error: err });
@@ -115,13 +108,13 @@ app.get('/newuser/:username/:password', (req, res) => {
     });
 });
 
-sendTokenEmail = async (req, res, username, registrationCode) => {
+sendTokenEmail = async (username, registrationCode) => {
     const response = await fetch('https://api.elasticemail.com/v2/email/send?' +
         'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
         '&subject=' + 'Confirm your registration for Intellisheets' +
         '&from=' + 'credentials@intellisheets.me' +
         '&fromName=' + 'Intellisheets Credentials' +
-        `&to=${username}`+
+        `&to=${username}` +
         '&bodyHTML=' + `<h1>Here is your registration code: ${registrationCode}</h1>` +
         '&isTransactional=' + 'true'
     );
