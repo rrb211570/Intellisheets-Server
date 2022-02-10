@@ -74,7 +74,7 @@ app.get('/newuser/:username/:password', (req, res) => {
                         res.json({ usernameAvailable: true, username: username, elasticRes: blah, code: registrationCode })
                     })
                     .catch(err => {
-                        res.json(json.stringify({ error: err, user: username, code: registrationCode}));
+                        res.json({ error: err, user: username, code: registrationCode});
                         console.log('error: ');
                         console.log(err);
                         console.log('done');
