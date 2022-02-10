@@ -15,7 +15,6 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 5000;
 var mongoose = require('mongoose');
-const res = require('express/lib/response');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.get('/', (req, res) => {
@@ -77,12 +76,13 @@ app.get('/newuser/:username/:password', (req, res) => {
                             if (err) {
                                 res.json({ error: err });
                             } else {
-                                sendTokenEmail(username, registrationCode, res)
+                                sendTokenEmail(username, registrationCode)
                                     .then(blah=>{
-                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode, ret: blah})
+                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
                                     })
                                     .catch(err => {
                                         res.json({ error: err, user: username, code: registrationCode});
+                                        console.log(err);
                                     });
                             }
                         });
@@ -93,7 +93,7 @@ app.get('/newuser/:username/:password', (req, res) => {
     });
 });
 
-sendTokenEmail = async (username, registrationCode, res) => {
+sendTokenEmail = async (username, registrationCode) => {
     const response = await fetch('https://api.elasticemail.com/v2/email/send?' +
         'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
         '&subject=' + 'Confirm your registration for Intellisheets' +
@@ -105,7 +105,7 @@ sendTokenEmail = async (username, registrationCode, res) => {
     );
     const body = await response.json();
     if (response.status !== 200) {
-        res.json({zterror: body.error});
+        throw Error(body.error)
     }
     return body;
 }
