@@ -81,7 +81,7 @@ app.get('/newuser/:username/:password', (req, res) => {
                                         res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
                                     })
                                     .catch(err => {
-                                        res.json({ error: err, user: username, code: registrationCode});
+                                        res.json(json.stringify({ error: err, user: username, code: registrationCode}));
                                         console.log('error: ');
                                         console.log(err);
                                         console.log('done');
