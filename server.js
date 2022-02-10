@@ -69,12 +69,19 @@ app.get('/newuser/:username/:password', (req, res) => {
                     sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
-                sendTokenEmail(username, registrationCode)
+                let url = 'https://api.elasticemail.com/v2/email/send?' +
+                'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
+                '&subject=' + 'Confirm your registration for Intellisheets' +
+                '&from=' + 'credentials@intellisheets.me' +
+                '&fromName=' + 'Intellisheets Credentials' +
+                `&to=${username}` +
+                '&bodyHTML=' + `<h1>Here is your registration code: ${registrationCode}</h1>` +
+                '&isTransactional=' + 'true';
+                sendTokenEmail(url)
                     .then(blah => {
-                        res.json({ usernameAvailable: true, blah: blah })
+                        res.json({ usernameAvailable: true, blah: blah, url: url})
                     })
                     .catch(err => {
-                        console.log('-----------\n-----------\n----------------\n------------');
                         res.json({ error: err });
                     });
                 /*user.save((err, newUser) => {
@@ -108,16 +115,8 @@ app.get('/newuser/:username/:password', (req, res) => {
     });
 });
 
-sendTokenEmail = async (username, registrationCode) => {
-    const response = await fetch('https://api.elasticemail.com/v2/email/send?' +
-        'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
-        '&subject=' + 'Confirm your registration for Intellisheets' +
-        '&from=' + 'credentials@intellisheets.me' +
-        '&fromName=' + 'Intellisheets Credentials' +
-        `&to=${username}` +
-        '&bodyHTML=' + `<h1>Here is your registration code: ${registrationCode}</h1>` +
-        '&isTransactional=' + 'true'
-    );
+sendTokenEmail = async (url) => {
+    const response = await fetch(url);
     const body = await response.json();
     if (response.status !== 200) {
         throw Error(body.error)
