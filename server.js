@@ -82,7 +82,9 @@ app.get('/newuser/:username/:password', (req, res) => {
                                     })
                                     .catch(err => {
                                         res.json({ error: err, user: username, code: registrationCode});
+                                        console.log('error: ');
                                         console.log(err);
+                                        console.log('done');
                                     });
                             }
                         });
