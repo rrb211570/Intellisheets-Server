@@ -12,7 +12,9 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(bodyParser.json());
-const fetch = require('node-fetch');
+
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 const port = process.env.PORT || 5000;
 var mongoose = require('mongoose');
@@ -69,21 +71,20 @@ app.get('/newuser/:username/:password', (req, res) => {
                     sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
-                let url = encodeURI('https://api.elasticemail.com/v2/email/send?' +
-                'apikey=' + 'A9489D65B4152D9C271941CD1DE5A009DD5A3ADC2B0DDE6A7624B296C93CD1166DC6A5EF0077D22A40572AA784C286A1' +
-                '&subject=' + 'Confirm' +
-                '&from=' + 'credentials' +
-                '&fromName=' + 'Intellisheets' +
-                `&to=user` +
-                '&bodyHTML=' + `<h1>code${registrationCode}</h1>` +
-                '&isTransactional=' + 'true');
-                sendTokenEmail(url)
+                const msg = {
+                    to: `${username}`, // Change to your recipient
+                    from: 'credentials@intellisheets.me', // Change to your verified sender
+                    subject: 'Confirm Intellisheets Registration',
+                    html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.me/confirmCode/{{registrationCode}}">here</a> to confirm you registration.<p>',
+                  }
+                  sgMail
+                    .send(msg)
                     .then(blah => {
-                        res.json({ usernameAvailable: true, blah: blah, url: url})
+                        res.json({ usernameAvailable: true, status: 'success', username: username});
                     })
                     .catch(err => {
-                        res.json({ error: err });
-                    });
+                        res.json({ usernameAvailable: true, status: 'fail', username: username});
+                    })
                 /*user.save((err, newUser) => {
                     if (err) {
                         res.json({ error: err });
