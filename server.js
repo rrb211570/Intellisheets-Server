@@ -76,14 +76,14 @@ app.get('/newuser/:username/:password', (req, res) => {
                     from: 'credentials@intellisheets.me', // Change to your verified sender
                     subject: 'Confirm Intellisheets Registration',
                     html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.me/confirmCode/{{registrationCode}}">here</a> to confirm you registration.<p>',
-                  }
-                  sgMail
+                }
+                sgMail
                     .send(msg)
                     .then(blah => {
-                        res.json({ usernameAvailable: true, status: 'success', username: username});
+                        res.json({ usernameAvailable: true, status: 'success', username: username, code: registrationCode});
                     })
                     .catch(err => {
-                        res.json({ usernameAvailable: true, status: 'fail', username: username});
+                        res.json({ usernameAvailable: true, status: 'fail', username: username, code: registrationCode });
                     })
                 /*user.save((err, newUser) => {
                     if (err) {
