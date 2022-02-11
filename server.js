@@ -71,7 +71,7 @@ app.get('/newuser/:username/:password', (req, res) => {
                     sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
-                let usernamePrefix = username.match(/(.+)\@.+/)[0];
+                let usernamePrefix = username.match(/(.+)\@.+/)[1];
                 const msg = {
                     to: `${username}`, // Change to your recipient
                     from: 'credentials@intellisheets.me', // Change to your verified sender
