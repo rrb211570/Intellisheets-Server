@@ -71,16 +71,17 @@ app.get('/newuser/:username/:password', (req, res) => {
                     sessionID: registrationCode, // store code here temporarily
                     sheets: []
                 });
+                let usernamePrefix = username.match(/(.+)\@.+/)[0];
                 const msg = {
                     to: `${username}`, // Change to your recipient
                     from: 'credentials@intellisheets.me', // Change to your verified sender
                     subject: 'Confirm Intellisheets Registration',
-                    html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.me/confirmCode/{{registrationCode}}">here</a> to confirm you registration.<p>',
+                    html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.me/confirmCode/' + usernamePrefix + '/' + registrationCode + '">here</a> to confirm you registration.<p>',
                 }
                 sgMail
                     .send(msg)
                     .then(blah => {
-                        res.json({ usernameAvailable: true, status: 'success', username: username, code: registrationCode});
+                        res.json({ usernameAvailable: true, status: 'success', username: username, code: registrationCode });
                     })
                     .catch(err => {
                         res.json({ usernameAvailable: true, status: 'fail', username: username, code: registrationCode });
