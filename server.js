@@ -75,9 +75,8 @@ app.get('/newuser/:username/:password', (req, res) => {
                 const msg = {
                     to: `${username}`, // Change to your recipient
                     from: 'credentials@intellisheets.me', // Change to your verified sender
-                    subject: 'Sending with SendGrid is Fun',
-                    text: 'and easy to do anywhere, even with Node.js',
-                    html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+                    subject: 'Intellisheets Registration',
+                    html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.com/confirmToken/'+usernamePrefix+'/'+registrationCode+'">here</a> to confirm your registration.</p>',
                 }
                 sgMail
                     .send(msg)
