@@ -126,7 +126,7 @@ sendTokenEmail = async (url) => {
     return body;
 }
 
-app.get('tokenconfirm/:username/:registrationCode', (req, res) => {
+app.get('confirmCode/:username/:registrationCode', (req, res) => {
     let username = req.params.username;
     let registrationCode = req.params.registrationCode;
     User.find({ username: username }, (err, peopleFound) => {
