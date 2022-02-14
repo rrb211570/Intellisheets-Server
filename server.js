@@ -2,21 +2,23 @@ const express = require('express');
 var cors = require('cors');
 const app = express();
 app.use(cors());
-
-require('dotenv').config();
-const cookieParser = require("cookie-parser");
-var jwt = require('jsonwebtoken');
-
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(bodyParser.json());
+require('dotenv').config();
+const port = process.env.PORT || 5000;
+
+var bcrypt = require('bcryptjs');
+var rand = require('csprng');
+var jwt = require('jsonwebtoken');
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-const port = process.env.PORT || 5000;
 var mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -29,10 +31,8 @@ app.listen(port, () => console.log(`Listening at http://localhost:${port}`));
 const { Schema } = mongoose;
 let userSchema = new Schema({
     username: String,
-    password: String,
-    salt: String,
-    hashedPass: String,
-    sessionID: String,
+    hash: String,
+    signatureSecret: String,
     sheets: [
         {
             id: String,
@@ -56,213 +56,231 @@ let userSchema = new Schema({
 });
 let User = mongoose.model('User', userSchema);
 
-app.get('/newuser/:username/:password', (req, res) => {
-    let username = req.params.username;
+app.get('/newUser/:username/:password', (req, res) => {
+    const username = req.params.username;
+    const password = req.params.password;
     User.find({ username: username }, (err, peopleFound) => {
-        if (err) {
-            res.json({ error: err });
-        } else {
+        if (err) res.json({ status: 'fail', reason: err });
+        else {
             if (peopleFound.length == 0) {
                 let registrationCode = '';
                 for (let i = 0; i < 8; ++i) registrationCode = registrationCode + Math.floor(Math.random() * 10) + '';
+                var salt = bcrypt.genSaltSync(14);
                 let user = User({
                     username: username,
-                    password: req.params.password,
-                    sessionID: registrationCode, // store code here temporarily
+                    hash: bcrypt.hashSync(password, salt),
+                    signatureSecret: registrationCode, // store code here temporarily
                     sheets: []
                 });
-                let usernamePrefix = username.match(/(.+)\@.+/)[1];
-                const msg = {
-                    to: `${username}`, // Change to your recipient
-                    from: 'credentials@intellisheets.me', // Change to your verified sender
-                    subject: 'Intellisheets Registration',
-                    html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.com/confirmToken/'+usernamePrefix+'/'+registrationCode+'">here</a> to confirm your registration.</p>',
-                }
-                sgMail
-                    .send(msg)
-                    .then(blah => {
-                        res.json({ usernameAvailable: true, status: 'success', username: username, code: registrationCode });
-                    })
-                    .catch(err => {
-                        res.json({ usernameAvailable: true, status: 'fail', username: username, code: registrationCode });
-                    })
-                /*user.save((err, newUser) => {
-                    if (err) {
-                        res.json({ error: err });
-                    } else {
+                user.save((err, newUser) => {
+                    if (err) res.json({ status: 'fail', reason: err });
+                    else {
                         User.findById(newUser._id, function (err, pers) {
-                            if (err) {
-                                res.json({ error: err });
-                            } else {
-                                try{
-                                    sendTokenEmail(req, res, username, registrationCode)
-                                    .then(blah=>{
-                                        res.json({ usernameAvailable: true, username: pers.username, _id: pers._id, sheets: pers.sheets, elasticRes: elasticRes, code: registrationCode })
-                                    })
-                                    .catch(err => {
-                                        res.json(json.stringify({ error: err, user: username, code: registrationCode}));
-                                        console.log('error: ');
-                                        console.log(err);
-                                        console.log('done');
-                                    });
-                                }catch(e){
-                                    res.json({error: e});
-                                }
-                            }
+                            if (err) res.json({ status: 'fail', reason: err });
+                            else sendEmailCode(res, username, registrationCode);
                         });
                     }
-                })*/
-            } else res.json({ usernameAvailable: false })
+                })
+            } else res.json({ status: 'fail', reason: 'newUser: usernameAvailable: false' })
         }
     });
 });
 
-sendTokenEmail = async (url) => {
-    const response = await fetch(url);
-    const body = await response.json();
-    if (response.status !== 200) {
-        throw Error(body.error)
+function sendEmailCode(res, username, registrationCode) {
+    const usernamePrefix = username.match(/(.+)\@.+/)[1];
+    const msg = {
+        to: `${username}`,
+        from: 'credentials@intellisheets.me',
+        subject: 'Intellisheets Registration',
+        html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.com/confirmToken/' + usernamePrefix + '/' + registrationCode + '">here</a> to confirm your registration.</p>',
     }
-    return body;
+    sgMail
+        .send(msg)
+        .then(blah => {
+            res.json({ status: 'success', usernameAvailable: true, username: username, code: registrationCode });
+        })
+        .catch(err => {
+            res.json({ status: 'fail', reason: err, usernameAvailable: true, username: username, code: registrationCode });
+        })
 }
 
 app.get('confirmCode/:username/:registrationCode', (req, res) => {
-    let username = req.params.username;
-    let registrationCode = req.params.registrationCode;
+    const username = req.params.username;
+    const registrationCode = req.params.registrationCode;
     User.find({ username: username }, (err, peopleFound) => {
-        if (err) {
-            res.json({ error: err });
-        } else {
-            if (peopleFound.length != 1) {
-                res.json({ error: 'tokenconfirm: peopleFound != 1' });
-            } else {
+        if (err) res.json({ status: 'fail', reason: err });
+        else {
+            if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'confirmCode: peopleFound != 1' });
+            else {
                 let user = peopleFound[0];
-                if (user.sessionID == registrationCode) {
-                    // hash (pass + salt) into hashedPass
-                    res.json({ JWT: createJWT() }); // check
-                } else res.json({ status: 'fail', reason: 'invalid token' });
+                if (user.signatureSecret == registrationCode) {
+                    let secret = rand(128, 14);
+                    const token = jwt.sign({username: username}, secret);
+                    User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
+                        if (err) res.json({ status: 'fail', reason: err })
+                        else res.cookie("intellisheets_token", token, {
+                            httpOnly: true,
+                            secure: process.env.NODE_ENV === "production",
+                        }).json({ status: 'success' });
+                    });
+                }
+                else res.json({ status: 'fail', reason: 'confirmCode: invalid email confirmation code' });
             }
         }
     });
 });
 
 app.get('/login/:username/:password', (req, res) => {
-    let username = req.params.username;
-    let password = req.params.password;
-    User.find({ username: username, password: password }, (err, peopleFound) => {
-        if (err) {
-            res.json({ error: err });
-        } else {
-            if (peopleFound.length == 0) res.json({ validCredentials: false });
-            else res.json({ validCredentials: true, JWT: createJWT() }) // check
+    const username = req.params.username;
+    const password = req.params.password;
+    User.find({ username: username }, (err, peopleFound) => {
+        if (err) res.json({ status: 'fail', reason: err });
+        else {
+            if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+            else {
+                let user = peopleFound[0];
+                bcrypt.compare(password, user.hash, function (err, res) {
+                    if (err) res.json({ status: 'fail', reason: err });
+                    else {
+                        let secret = rand(128, 14);
+                        const token = jwt.sign({username: username}, secret);
+                        User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
+                            if (err) res.json({ status: 'fail', reason: err })
+                            else res.cookie("intellisheets_token", token, {
+                                httpOnly: true,
+                                secure: process.env.NODE_ENV === "production",
+                            }).json({ status: 'success' });
+                        });
+                    }
+                });
+            }
         }
     });
 });
 
-function createJWT() {
-    // check
-}
-
-app.get('/sheets/:username/:password', (req, res) => {
-    let username = req.params.username;
-    let password = req.params.password;
-    User.find({ username: username, password: password }, (err, peopleFound) => {
-        if (err || peopleFound.length != 1) {
-            res.json({ error: err });
-        } else {
-            let person = peopleFound[0];
-            let sheetPreviews = [];
-            for (const sheet of person.sheets) sheetPreviews.push({ id: sheet.id, title: sheet.title });
-            res.json({ username: person.username, _id: person._id, sheetPreviews: sheetPreviews });
-        }
-    });
+app.get('/sheets/:username', authorization, (req, res) => {
+    const token = req.cookies.intellisheets_token;
+    if (!token) res.sendStatus(403);
+    const username = jwt.decode(token, {complete: true}).payload.username;
+    try {
+        User.find({ username: username }, (err, peopleFound) => {
+            if (err) res.json({ status: 'fail', reason: err });
+            else {
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                else {
+                    let person = peopleFound[0];
+                    jwt.verify(token, person.signatureSecret);
+                    let sheetPreviews = [];
+                    for (const sheet of person.sheets) sheetPreviews.push({ id: sheet.id, title: sheet.title });
+                    res.json({ status: 'success', sheetPreviews: sheetPreviews });
+                }
+            }
+        });
+    } catch (e) {
+        res.sendStatus(403);
+    }
 });
 
-app.get('/createSheet/:username/:password/:rows/:cols/', (req, res) => {
-    let username = req.params.username;
-    let password = req.params.password;
+app.get('/createSheet/:rows/:cols/', (req, res) => {
+    const token = req.cookies.intellisheets_token;
+    if (!token) res.sendStatus(403);
+    let username = jwt.decode(token, {complete: true}).payload.username;
     let rows = req.params.rows;
     let cols = req.params.cols;
-    User.find({ username: username, password: password }, (err, peopleFound) => {
-        if (err || peopleFound.length != 1) {
-            res.json({ error: err });
-        } else {
-            let newSheetID = peopleFound[0].sheets.length;
-            let newSheet = {
-                id: newSheetID,
-                title: 'Untitled',
-                rows: rows,
-                cols: cols,
-                dateCreated: getDate(),
-                dateModified: getDate(),
-                data: []
-            }
-            let modifiedSheets = [...peopleFound[0].sheets, newSheet];
-            User.updateOne({ username: username, password: password }, { sheets: modifiedSheets }, (err, status) => {
-                if (err) {
-                    res.json({ error: err })
-                } else {
-                    res.json({
-                        status: 'NEW_SHEET',
-                        newSheetID: newSheetID
+    try {
+        User.find({ username: username }, (err, peopleFound) => {
+            if (err) res.json({ status: 'fail', reason: err });
+            else {
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                else {
+                    let person = peopleFound[0];
+                    jwt.verify(token, person.signatureSecret);
+                    let newSheetID = person.sheets.length;
+                    let newSheet = {
+                        id: newSheetID,
+                        title: 'Untitled',
+                        rows: rows,
+                        cols: cols,
+                        dateCreated: getDate(),
+                        dateModified: getDate(),
+                        data: []
+                    }
+                    let modifiedSheets = [...person.sheets, newSheet];
+                    User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
+                        if (err) res.json({ status: 'fail', reason: err })
+                        else res.json({ status: 'success', newSheetID: newSheetID });
                     });
                 }
-            });
-        }
-    });
+            }
+        });
+    } catch (e) {
+        res.sendStatus(403);
+    }
 });
 
-app.get('/loadSheet/:username/:password/:sheetID', (req, res) => {
-    let username = req.params.username;
-    let password = req.params.password;
+app.get('/loadSheet/:sheetID', (req, res) => {
+    const token = req.cookies.intellisheets_token;
+    if (!token) res.sendStatus(403);
+    let username = jwt.decode(token, {complete: true}).payload.username;
     let sheetID = req.params.sheetID;
-    User.find({ username: username, password: password }, (err, peopleFound) => {
-        if (err || peopleFound.length != 1) {
-            res.json({ error: err });
-        } else {
-            let payload = {};
-            let dbEntrySheets = peopleFound[0].sheets;
-            for (let i = 0; i < dbEntrySheets.length; ++i) {
-                if (dbEntrySheets[i].id == sheetID) {
-                    payload.title = dbEntrySheets[i].title;
-                    payload.rows = dbEntrySheets[i].rows;
-                    payload.cols = dbEntrySheets[i].cols;
-                    payload.data = dbEntrySheets[i].data;
-                    break;
+    try {
+        User.find({ username: username }, (err, peopleFound) => {
+            if (err) res.json({ status: 'fail', reason: err });
+            else {
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                else {
+                    let person = peopleFound[0];
+                    jwt.verify(token, person.signatureSecret);
+                    let payload = {};
+                    let dbEntrySheets = person.sheets;
+                    for (let i = 0; i < dbEntrySheets.length; ++i) {
+                        if (dbEntrySheets[i].id == sheetID) {
+                            payload.title = dbEntrySheets[i].title;
+                            payload.rows = dbEntrySheets[i].rows;
+                            payload.cols = dbEntrySheets[i].cols;
+                            payload.data = dbEntrySheets[i].data;
+                            break;
+                        }
+                    }
+                    if (!payload.hasOwnProperty('title')) res.json({ status: 'fail', reason: 'loadSheet(): payload is empty' });
+                    else {
+                        payload.status = 'success';
+                        res.json(Object.assign({}, payload));
+                    }
                 }
             }
-            if (!payload.hasOwnProperty('title')) res.json({ error: 'loadSheet(): payload is empty' });
-            else {
-                payload.status = 'OPEN_SHEET';
-                res.json(Object.assign({}, payload));
-            }
-        }
-    });
+        });
+    } catch (e) {
+        res.sendStatus(403);
+    }
 });
 
-app.post('/saveSheet/:username/:password/:sheetID', (req, res) => {
-    let username = req.params.username;
-    let password = req.params.password;
+app.post('/saveSheet/:sheetID', (req, res) => {
+    const token = req.cookies.intellisheets_token;
+    if (!token) res.sendStatus(403);
+    let username = jwt.decode(token, {complete: true}).payload.username;
     let sheetID = req.params.sheetID;
     let receivedData = req.body.exposedCollectedData;
-    User.find({ username: username, password: password }, (err, peopleFound) => {
-        if (err || peopleFound.length != 1) {
-            res.json({ error: err });
-        } else {
-            let modifiedSheets = updateSheets(peopleFound[0].sheets, receivedData, sheetID);
-            if (modifiedSheets == null) res.json({ error: 'API Error: ...saveSheet : sheetID not found' });
-            User.updateOne({ username: username, password: password }, { sheets: modifiedSheets }, (err, status) => {
-                if (err) {
-                    res.json({ error: err })
-                } else {
-                    res.json({
-                        status: 'saved sheet',
-                        dat: receivedData
+    try {
+        User.find({ username: username, }, (err, peopleFound) => {
+            if (err) res.json({ status: 'fail', reason: err });
+            else {
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                else {
+                    let person = peopleFound[0];
+                    jwt.verify(token, person.signatureSecret);
+                    let modifiedSheets = updateSheets(person.sheets, receivedData, sheetID);
+                    if (modifiedSheets == null) res.json({ status: 'fail', reason: 'API Error: ...saveSheet : sheetID not found' });
+                    User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
+                        if (err) res.json({ status: 'fail', reason: err })
+                        else res.json({ status: 'success', dat: receivedData });
                     });
                 }
-            });
-        }
-    });
+            }
+        });
+    } catch (e) {
+        res.sendStatus(403);
+    }
 });
 
 function updateSheets(dbSheets, receivedData, sheetID) {
