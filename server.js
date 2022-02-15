@@ -180,7 +180,7 @@ app.get('/logout', (req, res) => {
     }
 });
 
-app.get('/sheets/:username', authorization, (req, res) => {
+app.get('/sheets', authorization, (req, res) => {
     const token = req.cookies.intellisheets_token;
     if (!token) res.sendStatus(403);
     const username = jwt.decode(token, { complete: true }).payload.username;
