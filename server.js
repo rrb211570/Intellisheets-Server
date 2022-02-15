@@ -159,7 +159,7 @@ app.get('/login/:username/:password', (req, res) => {
 
 app.get('/logout', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.sendStatus(403);
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
@@ -176,13 +176,13 @@ app.get('/logout', (req, res) => {
             }
         });
     } catch (e) {
-        res.sendStatus(403);
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.get('/sheets', authorization, (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.sendStatus(403);
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
@@ -199,13 +199,13 @@ app.get('/sheets', authorization, (req, res) => {
             }
         });
     } catch (e) {
-        res.sendStatus(403);
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.get('/createSheet/:rows/:cols/', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.sendStatus(403);
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     let username = jwt.decode(token, { complete: true }).payload.username;
     let rows = req.params.rows;
     let cols = req.params.cols;
@@ -236,13 +236,13 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
             }
         });
     } catch (e) {
-        res.sendStatus(403);
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.get('/loadSheet/:sheetID', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.sendStatus(403);
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     try {
@@ -273,13 +273,13 @@ app.get('/loadSheet/:sheetID', (req, res) => {
             }
         });
     } catch (e) {
-        res.sendStatus(403);
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.post('/saveSheet/:sheetID', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.sendStatus(403);
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     let receivedData = req.body.exposedCollectedData;
@@ -301,7 +301,7 @@ app.post('/saveSheet/:sheetID', (req, res) => {
             }
         });
     } catch (e) {
-        res.sendStatus(403);
+        res.json({status: 'fail', reason: e});
     }
 });
 
