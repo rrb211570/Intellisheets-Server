@@ -87,12 +87,11 @@ app.get('/newUser/:username/:password', (req, res) => {
 });
 
 function sendEmailCode(res, username, registrationCode) {
-    const usernamePrefix = username.match(/(.+)\@.+/)[1];
     const msg = {
         to: `${username}`,
         from: 'credentials@intellisheets.me',
         subject: 'Intellisheets Registration',
-        html: '<p>Thank you for choosing Intellisheets! Click <a href="intellisheets.com/confirmToken/' + usernamePrefix + '/' + registrationCode + '">here</a> to confirm your registration.</p>',
+        html: '<p>Here is your confirmation code for Intellisheets: '+registrationCode+'<br> If you\'ve exited the code confirmation page, click <a href="intellisheets.me/confirmCode/' + username + '">here</a> to open it up again.</p>',
     }
     sgMail
         .send(msg)
@@ -115,7 +114,7 @@ app.get('confirmCode/:username/:registrationCode', (req, res) => {
                 let user = peopleFound[0];
                 if (user.signatureSecret == registrationCode) {
                     let secret = rand(128, 14);
-                    const token = jwt.sign({username: username}, secret);
+                    const token = jwt.sign({ username: username }, secret);
                     User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else res.cookie("intellisheets_token", token, {
@@ -124,7 +123,7 @@ app.get('confirmCode/:username/:registrationCode', (req, res) => {
                         }).json({ status: 'success' });
                     });
                 }
-                else res.json({ status: 'fail', reason: 'confirmCode: invalid email confirmation code' });
+                else res.json({ status: 'fail', reason: 'invalid code' });
             }
         }
     });
@@ -143,7 +142,7 @@ app.get('/login/:username/:password', (req, res) => {
                     if (err) res.json({ status: 'fail', reason: err });
                     else {
                         let secret = rand(128, 14);
-                        const token = jwt.sign({username: username}, secret);
+                        const token = jwt.sign({ username: username }, secret);
                         User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
                             if (err) res.json({ status: 'fail', reason: err })
                             else res.cookie("intellisheets_token", token, {
@@ -158,10 +157,33 @@ app.get('/login/:username/:password', (req, res) => {
     });
 });
 
+app.get('/logout', (req, res) => {
+    const token = req.cookies.intellisheets_token;
+    if (!token) res.sendStatus(403);
+    const username = jwt.decode(token, { complete: true }).payload.username;
+    try {
+        User.find({ username: username }, (err, peopleFound) => {
+            if (err) res.json({ status: 'fail', reason: err });
+            else {
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                else {
+                    let person = peopleFound[0];
+                    jwt.verify(token, person.signatureSecret);
+                    res.clearCookie("access_token")
+                        .status(200)
+                        .json({ message: "Successfully logged out 😏 🍀" });
+                }
+            }
+        });
+    } catch (e) {
+        res.sendStatus(403);
+    }
+});
+
 app.get('/sheets/:username', authorization, (req, res) => {
     const token = req.cookies.intellisheets_token;
     if (!token) res.sendStatus(403);
-    const username = jwt.decode(token, {complete: true}).payload.username;
+    const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
             if (err) res.json({ status: 'fail', reason: err });
@@ -184,7 +206,7 @@ app.get('/sheets/:username', authorization, (req, res) => {
 app.get('/createSheet/:rows/:cols/', (req, res) => {
     const token = req.cookies.intellisheets_token;
     if (!token) res.sendStatus(403);
-    let username = jwt.decode(token, {complete: true}).payload.username;
+    let username = jwt.decode(token, { complete: true }).payload.username;
     let rows = req.params.rows;
     let cols = req.params.cols;
     try {
@@ -221,7 +243,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
 app.get('/loadSheet/:sheetID', (req, res) => {
     const token = req.cookies.intellisheets_token;
     if (!token) res.sendStatus(403);
-    let username = jwt.decode(token, {complete: true}).payload.username;
+    let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     try {
         User.find({ username: username }, (err, peopleFound) => {
@@ -258,7 +280,7 @@ app.get('/loadSheet/:sheetID', (req, res) => {
 app.post('/saveSheet/:sheetID', (req, res) => {
     const token = req.cookies.intellisheets_token;
     if (!token) res.sendStatus(403);
-    let username = jwt.decode(token, {complete: true}).payload.username;
+    let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     let receivedData = req.body.exposedCollectedData;
     try {
