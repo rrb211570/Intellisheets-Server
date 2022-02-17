@@ -91,7 +91,7 @@ function sendEmailCode(res, username, registrationCode) {
         to: `${username}`,
         from: 'credentials@intellisheets.me',
         subject: 'Intellisheets Registration',
-        html: '<p>Here is your confirmation code for Intellisheets: ' + registrationCode + '<br> If you\'ve exited the code confirmation page, click <a href="intellisheets.me/confirmCode/' + username + '">here</a> to open it up again.</p>',
+        html: '<p>Here is your confirmation code for Intellisheets: '+registrationCode+'<br> If you\'ve exited the code confirmation page, click <a href="intellisheets.me/confirmCode/' + username + '">here</a> to open it up again.</p>',
     }
     sgMail
         .send(msg)
@@ -159,7 +159,7 @@ app.get('/login/:username/:password', (req, res) => {
 
 app.get('/logout', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.redirect('/');
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
@@ -176,13 +176,13 @@ app.get('/logout', (req, res) => {
             }
         });
     } catch (e) {
-        res.redirect('/');
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.get('/sheets', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.redirect('/');
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
@@ -199,13 +199,13 @@ app.get('/sheets', (req, res) => {
             }
         });
     } catch (e) {
-        res.redirect('/');
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.get('/createSheet/:rows/:cols/', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.redirect('/');
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     let username = jwt.decode(token, { complete: true }).payload.username;
     let rows = req.params.rows;
     let cols = req.params.cols;
@@ -236,13 +236,13 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
             }
         });
     } catch (e) {
-        res.redirect('/');
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.get('/loadSheet/:sheetID', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.redirect('/');
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     try {
@@ -273,13 +273,13 @@ app.get('/loadSheet/:sheetID', (req, res) => {
             }
         });
     } catch (e) {
-        res.redirect('/');
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.post('/saveSheet/:sheetID', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.redirect('/');
+    if (!token) res.json({status: 'fail', reason: 'invalid token'});
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     let receivedData = req.body.exposedCollectedData;
@@ -301,15 +301,15 @@ app.post('/saveSheet/:sheetID', (req, res) => {
             }
         });
     } catch (e) {
-        res.redirect('/');
+        res.json({status: 'fail', reason: e});
     }
 });
 
 app.use((req, res, next) => {
     res.status(404)
-        .type('text')
-        .send('Not Found');
-});
+      .type('text')
+      .send('Not Found');
+  });
 
 function updateSheets(dbSheets, receivedData, sheetID) {
     let ret = dbSheets.map(sheet => {
