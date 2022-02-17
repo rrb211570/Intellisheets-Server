@@ -103,7 +103,7 @@ function sendEmailCode(res, username, registrationCode) {
         })
 }
 
-app.get('confirmCode/:username/:registrationCode', (req, res) => {
+app.get('/confirmCode/:username/:registrationCode', (req, res) => {
     const username = req.params.username;
     const registrationCode = req.params.registrationCode;
     User.find({ username: username }, (err, peopleFound) => {
