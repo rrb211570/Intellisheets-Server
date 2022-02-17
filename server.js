@@ -182,7 +182,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/sheets', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.json({status: 'fail', reason: 'invalid token', cookies: req.cookies});
+    if (!token) res.json({status: 'fail', reason: 'invalid token', cookies: req.cookies, cookSign: req.signedCookies});
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
