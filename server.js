@@ -183,16 +183,7 @@ app.get('/logout', (req, res) => {
 app.get('/sheets', (req, res) => {
     const token = req.cookies.intellisheets_token;
     if (!token) {
-        const rawCookies = req.headers.cookie.split('; ');
-        // rawCookies = ['myapp=secretcookie, 'analytics_cookie=beacon;']
-
-        const parsedCookies = {};
-        rawCookies.forEach(rawCookie => {
-            const parsedCookie = rawCookie.split('=');
-            // parsedCookie = ['myapp', 'secretcookie'], ['analytics_cookie', 'beacon']
-            parsedCookies[parsedCookie[0]] = parsedCookie[1];
-        });
-        res.json({ status: 'fail', reason: 'invalid token', cookies: parsedCookies });
+        res.json({ status: 'fail', reason: 'invalid token', cookies: 'blah' });
     }
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
