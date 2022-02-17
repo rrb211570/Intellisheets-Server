@@ -7,14 +7,14 @@ app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(bodyParser.json());
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
 var bcrypt = require('bcryptjs');
 var rand = require('csprng');
 var jwt = require('jsonwebtoken');
-const cookieParser = require("cookie-parser");
-app.use(cookieParser());
 
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
@@ -182,7 +182,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/sheets', (req, res) => {
     const token = req.cookies.intellisheets_token;
-    if (!token) res.json({status: 'fail', reason: 'invalid token'});
+    if (!token) res.json({status: 'fail', reason: 'invalid token', cookies: req.cookies});
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
