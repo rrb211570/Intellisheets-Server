@@ -123,7 +123,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                         }).json({ status: 'success' });
                     });
                 }
-                else res.json({ status: 'fail', reason: 'invalid code' });
+                else res.json({ status: 'fail', reason: 'invalid code', sigSecret: user.signatureSecret, regCode: registrationCode });
             }
         }
     });
