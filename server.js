@@ -183,7 +183,7 @@ app.get('/logout', (req, res) => {
 app.get('/sheets', (req, res) => {
     const token = req.cookies.intellisheets_token;
     if (!token) {
-        res.json({ status: 'fail', reason: 'invalid token', cookies: 'blah' });
+        res.json({ status: 'fail', reason: 'invalid token', cookies: req.cookies, cook2: req.cookies.intellisheets_token, cook3: req.signedCookies, cook4: req.signedCookies.intellisheets_token });
     }
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
