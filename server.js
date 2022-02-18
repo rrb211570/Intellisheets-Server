@@ -138,7 +138,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                                 secure: true,
                                 sameSite: 'none'
                             });
-                            res.json({ status: 'success', context: 'cookie should be sent', access_token });
+                            res.json({ status: 'success', context: 'cookie sent', access_token });
                         }
                     });
                 }
