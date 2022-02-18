@@ -22,14 +22,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 var mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "https://intellisheets.me");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.header("Access-Control-Allow-Credentials", true); // allows cookie to be sent
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, HEAD, DELETE"); 
-    next();
-});
-
 app.get('/', (req, res) => {
     res.send('Hello Worlds!');
 });
