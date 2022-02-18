@@ -136,6 +136,13 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
     });
 });
 
+app.get('/testCookie',(req,res)=>{
+    const token = req.cookies.intellisheets_token;
+    if (!token) {
+        res.json({ status: 'fail', reason: 'invalid token', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.intellisheets_token });
+    } else res.json({status: 'success', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.intellisheets_token })
+});
+
 app.get('/login/:username/:password', (req, res) => {
     const username = req.params.username;
     const password = req.params.password;
