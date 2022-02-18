@@ -119,7 +119,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else res.cookie('intellisheets_token', token, {
                             httpOnly: true,
-                            secure: process.env.NODE_ENV === "production",
+                            secure: true,
                             sameSite: 'none'
                         }).json({ status: 'success', context: 'cookie should be sent' });
                     });
