@@ -103,10 +103,10 @@ function sendEmailCode(res, username, registrationCode) {
     sgMail
         .send(msg)
         .then(blah => {
-            res.json({ status: 'success', usernameAvailable: true, username: username, code: registrationCode });
+            res.json({ status: 'success', usernameAvailable: true});
         })
         .catch(err => {
-            res.json({ status: 'fail', reason: err, usernameAvailable: true, username: username, code: registrationCode });
+            res.json({ status: 'fail', reason: err, usernameAvailable: true});
         })
 }
 
@@ -126,14 +126,15 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else {
                             res.cookie('access_token', access_token, {
+                                httpOnly: true,
                                 secure: true,
                                 sameSite: 'none'
                             });
-                            res.json({ status: 'success', context: 'cookie sent', access_token });
+                            res.json({ status: 'success', context: 'cookie sent' });
                         }
                     });
                 }
-                else res.json({ status: 'fail', reason: 'invalid code', sigSecret: user.signatureSecret, regCode: registrationCode });
+                else res.json({ status: 'fail', reason: 'invalid code'});
             }
         }
     });
@@ -157,10 +158,11 @@ app.get('/login/:username/:password', (req, res) => {
                             if (err) res.json({ status: 'fail', reason: err })
                             else {
                                 res.cookie('access_token', access_token, {
+                                    httpOnly: true,
                                     secure: true,
                                     sameSite: 'none'
                                 });
-                                res.json({ status: 'success', context: 'cookie should be sent', access_token });
+                                res.json({ status: 'success', context: 'cookie sent' });
                             }
                         });
                     }
@@ -171,8 +173,8 @@ app.get('/login/:username/:password', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-    const token = req.cookies.intellisheets_token;
-    if (!token) res.json({ status: 'fail', reason: 'invalid token' });
+    const token = req.cookies.access_token;
+    if (!token) res.json({ status: 'fail', reason: 'missing token' });
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
@@ -194,9 +196,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/sheets', (req, res) => {
     const token = req.cookies.access_token;
-    if (!token) {
-        res.json({ status: 'fail', reason: 'invalid token'});
-    }
+    if (!token) res.json({ status: 'fail', reason: 'missing token'});
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
@@ -219,7 +219,7 @@ app.get('/sheets', (req, res) => {
 
 app.get('/createSheet/:rows/:cols/', (req, res) => {
     const token = req.cookies.access_token;
-    if (!token) res.json({ status: 'fail', reason: 'invalid token' });
+    if (!token) res.json({ status: 'fail', reason: 'missing token' });
     let username = jwt.decode(token, { complete: true }).payload.username;
     let rows = req.params.rows;
     let cols = req.params.cols;
@@ -256,7 +256,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
 
 app.get('/loadSheet/:sheetID', (req, res) => {
     const token = req.cookies.access_token;
-    if (!token) res.json({ status: 'fail', reason: 'invalid token' });
+    if (!token) res.json({ status: 'fail', reason: 'missing token' });
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     try {
@@ -293,7 +293,7 @@ app.get('/loadSheet/:sheetID', (req, res) => {
 
 app.post('/saveSheet/:sheetID', (req, res) => {
     const token = req.cookies.access_token;
-    if (!token) res.json({ status: 'fail', reason: 'invalid token' });
+    if (!token) res.json({ status: 'fail', reason: 'missing token' });
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
     let receivedData = req.body.exposedCollectedData;
@@ -317,12 +317,6 @@ app.post('/saveSheet/:sheetID', (req, res) => {
     } catch (e) {
         res.json({ status: 'fail', reason: e });
     }
-});
-
-app.use((req, res, next) => {
-    res.status(404)
-        .type('text')
-        .send('Not Found');
 });
 
 function updateSheets(dbSheets, receivedData, sheetID) {
