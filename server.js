@@ -1,7 +1,14 @@
 const express = require('express');
 var cors = require('cors');
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: [
+        'https://intellisheets.me'
+    ],
+    methods: ['GET', 'PUT', 'POST'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
+    credentials: true
+}));
 const bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({
     extended: false
@@ -23,7 +30,11 @@ var mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Credentials", true); // allows cookie to be sent
+    res.header("Access-Control-Allow-Origin", "https://intellisheets.me");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Credentials", true);
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, HEAD, DELETE");
+    res.header('Vary', 'origin')
     next();
 });
 
@@ -119,12 +130,16 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                 let user = peopleFound[0];
                 if (user.signatureSecret == registrationCode) {
                     let secret = rand(128, 14);
-                    const token = jwt.sign({ username: username }, secret);
+                    const access_token = jwt.sign({ username: username }, secret);
                     User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
-                        else res.cookie('intellisheets_token', 'huh', {
-                            secure: true
-                        }).json({ status: 'success', context: 'cookie should be sent' });
+                        else {
+                            res.cookie('access_token', access_token, {
+                                secure: true,
+                                sameSite: 'none'
+                            });
+                            res.json({ status: 'success', context: 'cookie should be sent', access_token });
+                        }
                     });
                 }
                 else res.json({ status: 'fail', reason: 'invalid code', sigSecret: user.signatureSecret, regCode: registrationCode });
@@ -133,11 +148,11 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
     });
 });
 
-app.get('/testCookie',(req,res)=>{
-    const token = req.cookies.intellisheets_token;
+app.get('/testCookie', (req, res) => {
+    const token = req.cookies.access_token;
     if (!token) {
-        res.json({ status: 'fail', reason: 'invalid token', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.intellisheets_token });
-    } else res.json({status: 'success', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.intellisheets_token })
+        res.json({ status: 'fail', reason: 'invalid token', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.access_token });
+    } else res.json({ status: 'success', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.access_token })
 });
 
 app.get('/login/:username/:password', (req, res) => {
@@ -153,13 +168,16 @@ app.get('/login/:username/:password', (req, res) => {
                     if (err) res.json({ status: 'fail', reason: err });
                     else {
                         let secret = rand(128, 14);
-                        const token = jwt.sign({ username: username }, secret);
+                        const access_token = jwt.sign({ username: username }, secret);
                         User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
                             if (err) res.json({ status: 'fail', reason: err })
-                            else res.cookie("intellisheets_token", token, {
-                                httpOnly: true,
-                                secure: process.env.NODE_ENV === "production",
-                            }).json({ status: 'success' });
+                            else {
+                                res.cookie('access_token', access_token, {
+                                    secure: true,
+                                    sameSite: 'none'
+                                });
+                                res.json({ status: 'success', context: 'cookie should be sent', access_token });
+                            }
                         });
                     }
                 });
