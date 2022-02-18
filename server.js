@@ -117,7 +117,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                     const token = jwt.sign({ username: username }, secret);
                     User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
-                        else res.cookie('intellisheets_token', token, {
+                        else res.cookie('intellisheets_token', 'huh', {
                             secure: true,
                             sameSite: 'none'
                         }).json({ status: 'success', context: 'cookie should be sent' });
