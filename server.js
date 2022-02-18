@@ -130,7 +130,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                                 secure: true,
                                 sameSite: 'none'
                             });
-                            res.json({ status: 'success', context: 'cookie sent' });
+                            res.json({ status: 'success', context: 'confirmed code, cookie sent' });
                         }
                     });
                 }
@@ -162,7 +162,7 @@ app.get('/login/:username/:password', (req, res) => {
                                     secure: true,
                                     sameSite: 'none'
                                 });
-                                res.json({ status: 'success', context: 'cookie sent' });
+                                res.json({ status: 'success', context: 'logged in, cookie sent' });
                             }
                         });
                     }
@@ -185,7 +185,7 @@ app.get('/logout', (req, res) => {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
                     res.clearCookie("access_token");
-                    res.json({ message: "Successfully logged out 😏 🍀" });
+                    res.json({ status: success, context: "logged out" });
                 }
             }
         });
