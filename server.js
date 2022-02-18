@@ -139,13 +139,6 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
     });
 });
 
-app.get('/testCookie', (req, res) => {
-    const token = req.cookies.access_token;
-    if (!token) {
-        res.json({ status: 'fail', reason: 'invalid token', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.access_token });
-    } else res.json({ status: 'success', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.access_token })
-});
-
 app.get('/login/:username/:password', (req, res) => {
     const username = req.params.username;
     const password = req.params.password;
@@ -189,9 +182,8 @@ app.get('/logout', (req, res) => {
                 else {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
-                    res.clearCookie("access_token")
-                        .status(200)
-                        .json({ message: "Successfully logged out 😏 🍀" });
+                    res.clearCookie("access_token");
+                    res.json({ message: "Successfully logged out 😏 🍀" });
                 }
             }
         });
@@ -201,9 +193,9 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/sheets', (req, res) => {
-    const token = req.cookies.intellisheets_token;
+    const token = req.cookies.access_token;
     if (!token) {
-        res.json({ status: 'fail', reason: 'invalid token', cookies: req.cookies, cook2: token, cook3: req.signedCookies, cook4: req.signedCookies.intellisheets_token });
+        res.json({ status: 'fail', reason: 'invalid token'});
     }
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
@@ -226,7 +218,7 @@ app.get('/sheets', (req, res) => {
 });
 
 app.get('/createSheet/:rows/:cols/', (req, res) => {
-    const token = req.cookies.intellisheets_token;
+    const token = req.cookies.access_token;
     if (!token) res.json({ status: 'fail', reason: 'invalid token' });
     let username = jwt.decode(token, { complete: true }).payload.username;
     let rows = req.params.rows;
@@ -263,7 +255,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
 });
 
 app.get('/loadSheet/:sheetID', (req, res) => {
-    const token = req.cookies.intellisheets_token;
+    const token = req.cookies.access_token;
     if (!token) res.json({ status: 'fail', reason: 'invalid token' });
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
@@ -300,7 +292,7 @@ app.get('/loadSheet/:sheetID', (req, res) => {
 });
 
 app.post('/saveSheet/:sheetID', (req, res) => {
-    const token = req.cookies.intellisheets_token;
+    const token = req.cookies.access_token;
     if (!token) res.json({ status: 'fail', reason: 'invalid token' });
     let username = jwt.decode(token, { complete: true }).payload.username;
     let sheetID = req.params.sheetID;
