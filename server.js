@@ -118,7 +118,6 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                     User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else res.cookie('intellisheets_token', token, {
-                            httpOnly: true,
                             secure: true,
                             sameSite: 'none'
                         }).json({ status: 'success', context: 'cookie should be sent' });
