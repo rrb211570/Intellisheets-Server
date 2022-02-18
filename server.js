@@ -185,7 +185,7 @@ app.get('/logout', (req, res) => {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
                     res.clearCookie("access_token");
-                    res.json({ status: success, context: "logged out" });
+                    res.json({ status: 'success', context: "logged out" });
                 }
             }
         });
