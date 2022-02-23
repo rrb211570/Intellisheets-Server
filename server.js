@@ -162,7 +162,7 @@ app.get('/login/:username/:password', (req, res) => {
                                     secure: true,
                                     sameSite: 'none'
                                 });
-                                res.json({ status: 'success', context: 'logged in' });
+                                res.json({ status: 'success', context: 'logged in.' });
                             }
                         });
                     }
