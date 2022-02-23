@@ -150,7 +150,7 @@ app.get('/login/:username/:password', (req, res) => {
             else {
                 let user = peopleFound[0];
                 try{
-                    bcrypt.compare(password, user.hash, function (err, res) {
+                    bcrypt.compare(password, user.hash, function (err, res2) {
                         if (err) res.json({ status: 'fail', reason: err });
                         else {
                             let secret = rand(128, 14);
