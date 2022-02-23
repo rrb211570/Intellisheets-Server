@@ -88,7 +88,7 @@ app.get('/newUser/:username/:password', (req, res) => {
                         });
                     }
                 })
-            } else res.json({ status: 'fail', reason: 'newUser: usernameAvailable: false' })
+            } else res.json({ status: 'fail', reason: 'usernameAvailable: false' })
         }
     });
 });
@@ -116,7 +116,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
     User.find({ username: username }, (err, peopleFound) => {
         if (err) res.json({ status: 'fail', reason: err });
         else {
-            if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'confirmCode: peopleFound != 1' });
+            if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
             else {
                 let user = peopleFound[0];
                 if (user.signatureSecret == registrationCode) {
@@ -146,7 +146,7 @@ app.get('/login/:username/:password', (req, res) => {
     User.find({ username: username }, (err, peopleFound) => {
         if (err) res.json({ status: 'fail', reason: err });
         else {
-            if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+            if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
             else {
                 let user = peopleFound[0];
                 try{
@@ -163,7 +163,7 @@ app.get('/login/:username/:password', (req, res) => {
                                         secure: true,
                                         sameSite: 'none'
                                     });
-                                    res.json({ status: 'success', context: 'logged in.' });
+                                    res.json({ status: 'success', context: 'logged in' });
                                 }
                             });
                         }
@@ -184,7 +184,7 @@ app.get('/logout', (req, res) => {
         User.find({ username: username }, (err, peopleFound) => {
             if (err) res.json({ status: 'fail', reason: err });
             else {
-                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
                 else {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
@@ -206,7 +206,7 @@ app.get('/sheets', (req, res) => {
         User.find({ username: username }, (err, peopleFound) => {
             if (err) res.json({ status: 'fail', reason: err });
             else {
-                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
                 else {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
@@ -231,7 +231,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
         User.find({ username: username }, (err, peopleFound) => {
             if (err) res.json({ status: 'fail', reason: err });
             else {
-                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
                 else {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
@@ -267,7 +267,7 @@ app.get('/loadSheet/:sheetID', (req, res) => {
         User.find({ username: username }, (err, peopleFound) => {
             if (err) res.json({ status: 'fail', reason: err });
             else {
-                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
                 else {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
@@ -305,7 +305,7 @@ app.post('/saveSheet/:sheetID', (req, res) => {
         User.find({ username: username, }, (err, peopleFound) => {
             if (err) res.json({ status: 'fail', reason: err });
             else {
-                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
                 else {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
