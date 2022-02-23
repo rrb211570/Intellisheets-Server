@@ -130,7 +130,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                                 secure: true,
                                 sameSite: 'none'
                             });
-                            res.json({ status: 'success', context: 'confirmed code' });
+                            res.json({ status: 'success', context: 'code confirmed' });
                         }
                     });
                 }
