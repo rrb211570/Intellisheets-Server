@@ -282,7 +282,7 @@ app.get('/loadSheet/:sheetID', (req, res) => {
                             break;
                         }
                     }
-                    if (!payload.hasOwnProperty('title')) res.json({ status: 'fail', reason: 'loadSheet(): payload is empty' });
+                    if (!payload.hasOwnProperty('title')) res.json({ status: 'fail', reason: 'sheetID does not exist' });
                     else {
                         payload.status = 'success';
                         res.json(Object.assign({}, payload));
