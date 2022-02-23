@@ -149,24 +149,28 @@ app.get('/login/:username/:password', (req, res) => {
             if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'peopleFound.length != 1' });
             else {
                 let user = peopleFound[0];
-                bcrypt.compare(password, user.hash, function (err, res) {
-                    if (err) res.json({ status: 'fail', reason: err });
-                    else {
-                        let secret = rand(128, 14);
-                        const access_token = jwt.sign({ username: username }, secret);
-                        User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
-                            if (err) res.json({ status: 'fail', reason: err })
-                            else {
-                                res.cookie('access_token', access_token, {
-                                    httpOnly: true,
-                                    secure: true,
-                                    sameSite: 'none'
-                                });
-                                res.json({ status: 'success', context: 'logged in.' });
-                            }
-                        });
-                    }
-                });
+                try{
+                    bcrypt.compare(password, user.hash, function (err, res) {
+                        if (err) res.json({ status: 'fail', reason: err });
+                        else {
+                            let secret = rand(128, 14);
+                            const access_token = jwt.sign({ username: username }, secret);
+                            User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
+                                if (err) res.json({ status: 'fail', reason: err })
+                                else {
+                                    res.cookie('access_token', access_token, {
+                                        httpOnly: true,
+                                        secure: true,
+                                        sameSite: 'none'
+                                    });
+                                    res.json({ status: 'success', context: 'logged in.' });
+                                }
+                            });
+                        }
+                    });
+                }catch(e){
+                    res.json({status: 'fail', reason: e})
+                }
             }
         }
     });
