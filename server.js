@@ -140,6 +140,26 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
     });
 });
 
+app.get('/checkToken',(req,res)=>{
+    const token = req.cookies.access_token;
+    if (!token) res.json({ status: 'fail', reason: 'missing token' });
+    const username = jwt.decode(token, { complete: true }).payload.username;
+    try {
+        User.find({ username: username }, (err, peopleFound) => {
+            if (err) res.json({ status: 'fail', reason: err });
+            else {
+                if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
+                else {
+                    let person = peopleFound[0];
+                    jwt.verify(token, person.signatureSecret);
+                    res.json({ status: 'success', context: "valid token" });
+                }
+            }
+        });
+    } catch (e) {
+        res.json({ status: 'fail', reason: e });
+    }
+})
 app.get('/login/:username/:password', (req, res) => {
     const username = req.params.username;
     const password = req.params.password;
