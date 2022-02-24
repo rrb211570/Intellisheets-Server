@@ -103,10 +103,10 @@ function sendEmailCode(res, username, registrationCode) {
     sgMail
         .send(msg)
         .then(blah => {
-            res.json({ status: 'success', usernameAvailable: true});
+            res.json({ status: 'success', usernameAvailable: true });
         })
         .catch(err => {
-            res.json({ status: 'fail', reason: err, usernameAvailable: true});
+            res.json({ status: 'fail', reason: err, usernameAvailable: true });
         })
 }
 
@@ -134,7 +134,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                         }
                     });
                 }
-                else res.json({ status: 'fail', reason: 'invalid code'});
+                else res.json({ status: 'fail', reason: 'invalid code' });
             }
         }
     });
@@ -149,27 +149,29 @@ app.get('/login/:username/:password', (req, res) => {
             if (peopleFound.length != 1) res.json({ status: 'fail', reason: 'user not found' });
             else {
                 let user = peopleFound[0];
-                try{
+                try {
                     bcrypt.compare(password, user.hash, function (err, res2) {
                         if (err) res.json({ status: 'fail', reason: err });
                         else {
-                            let secret = rand(128, 14);
-                            const access_token = jwt.sign({ username: username }, secret);
-                            User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
-                                if (err) res.json({ status: 'fail', reason: err })
-                                else {
-                                    res.cookie('access_token', access_token, {
-                                        httpOnly: true,
-                                        secure: true,
-                                        sameSite: 'none'
-                                    });
-                                    res.json({ status: 'success', context: 'logged in' });
-                                }
-                            });
+                            if (res2 == true) {
+                                let secret = rand(128, 14);
+                                const access_token = jwt.sign({ username: username }, secret);
+                                User.updateOne({ _id: user._id }, { signatureSecret: secret }, (err, status) => {
+                                    if (err) res.json({ status: 'fail', reason: err })
+                                    else {
+                                        res.cookie('access_token', access_token, {
+                                            httpOnly: true,
+                                            secure: true,
+                                            sameSite: 'none'
+                                        });
+                                        res.json({ status: 'success', context: 'logged in' });
+                                    }
+                                });
+                            } else res.json({ status: 'fail', reason: 'password does not match' });
                         }
                     });
-                }catch(e){
-                    res.json({status: 'fail', reason: e})
+                } catch (e) {
+                    res.json({ status: 'fail', reason: e })
                 }
             }
         }
@@ -200,7 +202,7 @@ app.get('/logout', (req, res) => {
 
 app.get('/sheets', (req, res) => {
     const token = req.cookies.access_token;
-    if (!token) res.json({ status: 'fail', reason: 'missing token'});
+    if (!token) res.json({ status: 'fail', reason: 'missing token' });
     const username = jwt.decode(token, { complete: true }).payload.username;
     try {
         User.find({ username: username }, (err, peopleFound) => {
