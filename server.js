@@ -334,7 +334,7 @@ app.post('/saveSheet/:sheetID', (req, res) => {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
                     let modifiedSheets = updateSheets(person.sheets, receivedData, sheetID);
-                    if (modifiedSheets == null) res.json({ status: 'fail', reason: 'API Error: ...saveSheet : sheetID not found' });
+                    if (modifiedSheets == null) res.json({ status: 'fail', reason: 'API Error: saveSheet : sheetID not found' });
                     User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else res.json({ status: 'success', dat: receivedData });
@@ -365,8 +365,8 @@ function updateSheets(dbSheets, receivedData, sheetID) {
                 if (!found) newEntries.push(receivedEntry)
             }
             sheet.data = [...dbData, ...newEntries];
+            return sheet;
         } else return null;
-        return sheet;
     });
     return ret;
 }
