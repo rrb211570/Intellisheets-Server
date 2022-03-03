@@ -235,7 +235,7 @@ app.get('/sheets', (req, res) => {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
                     let sheetPreviews = [];
-                    for (const sheet of person.sheets) sheetPreviews.push({ id: sheet.id, title: sheet.title });
+                    for (const sheet of person.sheets) sheetPreviews.push({ id: sheet.id, title: sheet.title, dateModified: sheet.dateModified});
                     res.json({ status: 'success', sheetPreviews: sheetPreviews });
                 }
             }
