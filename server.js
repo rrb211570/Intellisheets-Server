@@ -141,7 +141,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
     });
 });
 
-app.get('/checkToken',(req,res)=>{
+app.get('/checkToken', (req, res) => {
     const token = req.cookies.access_token;
     if (!token) res.json({ status: 'fail', reason: 'missing token' });
     const username = jwt.decode(token, { complete: true }).payload.username;
@@ -365,8 +365,8 @@ function updateSheets(dbSheets, receivedData, sheetID) {
                 if (!found) newEntries.push(receivedEntry)
             }
             sheet.data = [...dbData, ...newEntries];
-            return sheet;
-        } else return null;
+        }
+        return sheet;
     });
     return ret;
 }
