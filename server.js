@@ -28,6 +28,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 var mongoose = require('mongoose');
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
+var qs = require('qs');
 
 app.get('/', (req, res) => {
     res.send('Hello Worlds!');
@@ -236,7 +237,7 @@ app.get('/sheets', (req, res) => {
                     jwt.verify(token, person.signatureSecret);
                     let sheetPreviews = [];
                     for (const sheetString of person.sheets){
-                        let sheet = sheetString.json();
+                        let sheet = qs.parse(sheetString);
                         sheetPreviews.push({ id: sheet.id, title: sheet.title, dateModified: sheet.dateModified});
                     }
                     res.json({ status: 'success', sheetPreviews: sheetPreviews });
@@ -272,7 +273,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
                         dateModified: getDate(),
                         data: []
                     }
-                    let modifiedSheets = [...person.sheets, JSON.stringify(newSheet)];
+                    let modifiedSheets = [...person.sheets, qs.stringify(newSheet)];
                     User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else res.json({ status: 'success', newSheetID: newSheetID });
@@ -301,11 +302,12 @@ app.get('/loadSheet/:sheetID', (req, res) => {
                     let payload = {};
                     let dbEntrySheets = person.sheets;
                     for (let i = 0; i < dbEntrySheets.length; ++i) {
-                        if (dbEntrySheets[i].id == sheetID) {
-                            payload.title = dbEntrySheets[i].title;
-                            payload.rows = dbEntrySheets[i].rows;
-                            payload.cols = dbEntrySheets[i].cols;
-                            payload.data = dbEntrySheets[i].data;
+                        let sheet = qs.parse(dbEntrySheets[i]);
+                        if (sheet.id == sheetID) {
+                            payload.title = sheet[i].title;
+                            payload.rows = sheet[i].rows;
+                            payload.cols = sheet[i].cols;
+                            payload.data = sheet[i].data;
                             break;
                         }
                     }
@@ -352,7 +354,7 @@ app.post('/saveSheet/:sheetID', (req, res) => {
 
 function updateSheets(dbSheets, receivedData, sheetID) {
     let ret = dbSheets.map(sheetString => {
-        let sheet = sheetString.json();
+        let sheet = qs.parse(sheetString);
         if (sheet.id == sheetID) {
             sheet.dateModified = getDate();
             let dbData = sheet.data;
@@ -370,7 +372,7 @@ function updateSheets(dbSheets, receivedData, sheetID) {
             }
             sheet.data = [...dbData, ...newEntries];
         }
-        return JSON.stringify(sheet);
+        return qs.stringify(sheet);
     });
     return ret;
 }
