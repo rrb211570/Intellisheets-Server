@@ -269,7 +269,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
                         dateModified: getDate(),
                         data: []
                     }
-                    let modifiedSheets = [...person.sheets, newSheet];
+                    let modifiedSheets = [...person.sheets, JSON.stringify(newSheet)];
                     User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else res.json({ status: 'success', newSheetID: newSheetID });
@@ -348,7 +348,8 @@ app.post('/saveSheet/:sheetID', (req, res) => {
 });
 
 function updateSheets(dbSheets, receivedData, sheetID) {
-    let ret = dbSheets.map(sheet => {
+    let ret = dbSheets.map(sheetString => {
+        let sheet = sheetString.json();
         if (sheet.id == sheetID) {
             sheet.dateModified = getDate();
             let dbData = sheet.data;
@@ -366,7 +367,7 @@ function updateSheets(dbSheets, receivedData, sheetID) {
             }
             sheet.data = [...dbData, ...newEntries];
         }
-        return sheet;
+        return JSON.stringify(sheet);
     });
     return ret;
 }
