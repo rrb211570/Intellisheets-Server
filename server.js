@@ -287,10 +287,10 @@ app.get('/loadSheet/:sheetID', (req, res) => {
                     for (let i = 0; i < dbEntrySheets.length; ++i) {
                         let sheet = qs.parse(dbEntrySheets[i]);
                         if (sheet.id == sheetID) {
-                            payload.title = sheet[i].title;
-                            payload.rows = sheet[i].rows;
-                            payload.cols = sheet[i].cols;
-                            payload.data = sheet[i].data;
+                            payload.title = sheet.title;
+                            payload.rows = sheet.rows;
+                            payload.cols = sheet.cols;
+                            payload.data = sheet.data;
                             break;
                         }
                     }
