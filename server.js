@@ -41,26 +41,7 @@ let userSchema = new Schema({
     username: String,
     hash: String,
     signatureSecret: String,
-    sheets: [
-        {
-            id: String,
-            title: String,
-            rows: String,
-            cols: String,
-            dateCreated: String,
-            dateModified: String,
-            data: [{
-                entryKey: String,
-                col: String,
-                row: String,
-                val: String,
-                styleMap: [{
-                    property: String,
-                    value: String
-                }]
-            }]
-        }
-    ]
+    sheets: [String]
 });
 let User = mongoose.model('User', userSchema);
 
@@ -236,9 +217,9 @@ app.get('/sheets', (req, res) => {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
                     let sheetPreviews = [];
-                    for (const sheetString of person.sheets){
+                    for (const sheetString of person.sheets) {
                         let sheet = qs.parse(sheetString);
-                        sheetPreviews.push({ id: sheet.id, title: sheet.title, dateModified: sheet.dateModified});
+                        sheetPreviews.push({ id: sheet.id, title: sheet.title, dateModified: sheet.dateModified });
                     }
                     res.json({ status: 'success', sheetPreviews: sheetPreviews });
                 }
