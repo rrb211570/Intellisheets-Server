@@ -41,7 +41,9 @@ let userSchema = new Schema({
     username: String,
     hash: String,
     signatureSecret: String,
-    sheets: [String]
+    sheets: [{
+        type: String
+    }]
 });
 let User = mongoose.model('User', userSchema);
 
