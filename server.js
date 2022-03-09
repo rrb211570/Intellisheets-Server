@@ -273,7 +273,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
                         dateModified: getDate(),
                         data: []
                     }
-                    let modifiedSheets = [...person.sheets, JSON.stringify(newSheet)];
+                    let modifiedSheets = [...person.sheets, qs.stringify(newSheet)];
                     User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
                         else res.json({ status: 'success', newSheetID: newSheetID });
@@ -302,7 +302,7 @@ app.get('/loadSheet/:sheetID', (req, res) => {
                     let payload = {};
                     let dbEntrySheets = person.sheets;
                     for (let i = 0; i < dbEntrySheets.length; ++i) {
-                        let sheet = JSON.parse(dbEntrySheets[i]);
+                        let sheet = qs.parse(dbEntrySheets[i]);
                         if (sheet.id == sheetID) {
                             payload.title = sheet[i].title;
                             payload.rows = sheet[i].rows;
