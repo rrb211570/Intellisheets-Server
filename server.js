@@ -342,14 +342,14 @@ function updateSheets(dbSheets, receivedData, sheetID) {
         if (sheet.id == sheetID) {
             sheet.dateModified = getDate();
             // individual data
-            let dbIndividualData = sheet.data.individualData != '' ? [...sheet.data.individualData] : [];
+            let dbIndividualData = (sheet.data.hasOwnProperty('individualData') && sheet.data.individualData != '') ? [...sheet.data.individualData] : [];
             let newIndividualData = [];
             for (const receivedIndividual of receivedData.individualData) {
                 let found = false;
                 for (let dbIndividual of dbIndividualData) {
                     if (dbIndividual.entryKey == receivedIndividual.entryKey) {
                         copyVal(dbIndividual, receivedIndividual);
-                        if(!dbIndividual.hasOwnProperty('styleMap')) dbIndividual.styleMap = [];
+                        if (!dbIndividual.hasOwnProperty('styleMap')) dbIndividual.styleMap = [];
                         copyStyleMap(dbIndividual.styleMap, receivedIndividual.styleMap);
                         found = true;
                         break;
@@ -359,13 +359,13 @@ function updateSheets(dbSheets, receivedData, sheetID) {
             }
             sheet.data.individualData = [...dbIndividualData, ...newIndividualData];
             // group data
-            let dbGroupData = sheet.data.groupData != '' ? [...sheet.data.groupData] : [];
+            let dbGroupData = (sheet.data.hasOwnProperty('groupData') && sheet.data.groupData != '') ? [...sheet.data.groupData] : [];
             let newGroupData = [];
             for (const receivedGroup of receivedData.groupData) {
                 let found = false;
                 for (let dbGroup of dbGroupData) {
                     if (dbGroup.groupName == receivedGroup.groupName) {
-                        if(!dbGroup.hasOwnProperty('styleMap')) dbGroup.styleMap = [];
+                        if (!dbGroup.hasOwnProperty('styleMap')) dbGroup.styleMap = [];
                         copyStyleMap(dbGroup.styleMap, receivedGroup.styleMap);
                         found = true;
                         break;
