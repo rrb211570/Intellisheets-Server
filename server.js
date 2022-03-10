@@ -254,7 +254,7 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
                         cols: cols,
                         dateCreated: getDate(),
                         dateModified: getDate(),
-                        data: { individualData: null, groupData: null }
+                        data: { individualData: '', groupData: '' }
                     }
                     let sheetString = qs.stringify(newSheet);
                     let modifiedSheets = [...person.sheets, sheetString];
