@@ -256,10 +256,11 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
                         dateModified: getDate(),
                         data: []
                     }
-                    let modifiedSheets = [...person.sheets, qs.stringify(newSheet)];
+                    let sheetString = qs.stringify(newSheet);
+                    let modifiedSheets = [...person.sheets, sheetString];
                     User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
-                        else res.json({ status: 'success', newSheetID: newSheetID });
+                        else res.json({ status: 'success', newSheetID: newSheetID, sheet: newSheet, parsedSheet: qs.parse(sheetString)});
                     });
                 }
             }
@@ -341,7 +342,7 @@ function updateSheets(dbSheets, receivedData, sheetID) {
         if (sheet.id == sheetID) {
             sheet.dateModified = getDate();
             // individual data
-            let dbIndividualData = sheet.data[0];
+            let dbIndividualData = [...sheet.data[0]];
             let newIndividualData = [];
             for (const receivedIndividual of receivedData[0]) {
                 let found = false;
@@ -357,7 +358,7 @@ function updateSheets(dbSheets, receivedData, sheetID) {
             }
             sheet.data[0] = [...dbIndividualData, ...newIndividualData];
             // group data
-            let dbGroupData = sheet.data[1];
+            let dbGroupData = [...sheet.data[1]];
             let newGroupData = [];
             for (const receivedGroup of receivedData[1]) {
                 let found = false;
@@ -384,20 +385,20 @@ function getDate() {
     return date + ' ' + time;
 }
 
-function copyVal(dbEntry, receivedEntry) {
-    dbEntry.val = receivedEntry.val;
+function copyVal(dbIndividual, receivedIndividual) {
+    dbIndividual.val = receivedIndividual.val;
 }
 
-function copyStyleMap(dbIndividualStyleMap, receivedIndividualStyleMap) {
-    for (const receivedIndividualStylePair of receivedIndividualStyleMap) {
+function copyStyleMap(targetStyleMap, sourceStyleMap) {
+    for (const sourceStylePair of sourceStyleMap) {
         let found = false;
-        for (let dbIndividualStylePair of dbIndividualStyleMap) {
-            if (dbIndividualStylePair[0] == receivedIndividualStylePair[0]) {
-                dbIndividualStylePair[1] == receivedIndividualStylePair[1];
+        for (let targetStylePair of targetStyleMap) {
+            if (targetStylePair[0] == sourceStylePair[0]) {
+                targetStylePair[1] == sourceStylePair[1];
                 found = true;
                 break;
             }
         }
-        if(!found) dbIndividualStyleMap.push(receivedIndividualStylePair);
+        if(!found) targetStyleMap.push(sourceStylePair);
     }
 }
