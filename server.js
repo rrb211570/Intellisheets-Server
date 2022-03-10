@@ -340,20 +340,37 @@ function updateSheets(dbSheets, receivedData, sheetID) {
         let sheet = qs.parse(sheetString);
         if (sheet.id == sheetID) {
             sheet.dateModified = getDate();
-            let dbData = sheet.data;
-            let newEntries = [];
-            for (const receivedEntry of receivedData) {
+            // individual data
+            let dbIndividualData = sheet.data[0];
+            let newIndividualData = [];
+            for (const receivedIndividual of receivedData[0]) {
                 let found = false;
-                for (let dbEntry of dbData) {
-                    if (dbEntry.entryKey == receivedEntry.entryKey) {
+                for (let dbIndividual of dbIndividualData) {
+                    if (dbIndividual.entryKey == receivedIndividual.entryKey) {
+                        copyVal(dbIndividual, receivedIndividual);
+                        copyStyleMap(dbIndividual.styleMap, receivedIndividual.styleMap);
                         found = true;
-                        copyVal(dbEntry, receivedEntry);
-                        copyStyleMap(dbEntry.styleMap, receivedEntry.styleMap);
+                        break;
                     }
                 }
-                if (!found) newEntries.push(receivedEntry)
+                if (!found) newIndividualData.push(receivedIndividual)
             }
-            sheet.data = [...dbData, ...newEntries];
+            sheet.data[0] = [...dbIndividualData, ...newIndividualData];
+            // group data
+            let dbGroupData = sheet.data[1];
+            let newGroupData = [];
+            for (const receivedGroup of receivedData[1]) {
+                let found = false;
+                for (let dbGroup of dbGroupData) {
+                    if (dbGroup.groupName == receivedGroup.groupName) {
+                        copyStyleMap(dbGroup.styleMap, receivedGroup.styleMap);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) newGroupData.push(receivedGroup)
+            }
+            sheet.data[1] = [...dbGroupData, ...newGroupData];
         }
         return qs.stringify(sheet);
     });
@@ -371,12 +388,16 @@ function copyVal(dbEntry, receivedEntry) {
     dbEntry.val = receivedEntry.val;
 }
 
-function copyStyleMap(dbEntryStyleMap, receivedEntryStyleMap) {
-    for (const receivedEntryStylePair of receivedEntryStyleMap) {
-        for (let dbEntryStylePair of dbEntryStyleMap) {
-            if (dbEntryStylePair.property == receivedEntryStylePair.property) {
-                dbEntryStylePair.value == receivedEntryStylePair.value;
+function copyStyleMap(dbIndividualStyleMap, receivedIndividualStyleMap) {
+    for (const receivedIndividualStylePair of receivedIndividualStyleMap) {
+        let found = false;
+        for (let dbIndividualStylePair of dbIndividualStyleMap) {
+            if (dbIndividualStylePair[0] == receivedIndividualStylePair[0]) {
+                dbIndividualStylePair[1] == receivedIndividualStylePair[1];
+                found = true;
+                break;
             }
         }
+        if(!found) dbIndividualStyleMap.push(receivedIndividualStylePair);
     }
 }
