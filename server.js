@@ -254,13 +254,13 @@ app.get('/createSheet/:rows/:cols/', (req, res) => {
                         cols: cols,
                         dateCreated: getDate(),
                         dateModified: getDate(),
-                        data: []
+                        data: { individualData: null, groupData: null }
                     }
                     let sheetString = qs.stringify(newSheet);
                     let modifiedSheets = [...person.sheets, sheetString];
                     User.updateOne({ username: username }, { sheets: modifiedSheets }, (err, status) => {
                         if (err) res.json({ status: 'fail', reason: err })
-                        else res.json({ status: 'success', newSheetID: newSheetID, sheet: newSheet, parsedSheet: qs.parse(sheetString)});
+                        else res.json({ status: 'success', newSheetID: newSheetID, sheet: newSheet, parsedSheet: qs.parse(sheetString) });
                     });
                 }
             }
@@ -342,9 +342,9 @@ function updateSheets(dbSheets, receivedData, sheetID) {
         if (sheet.id == sheetID) {
             sheet.dateModified = getDate();
             // individual data
-            let dbIndividualData = [...sheet.data[0]];
+            let dbIndividualData = sheet.data.individualData != null ? [...sheet.data.individualData] : [];
             let newIndividualData = [];
-            for (const receivedIndividual of receivedData[0]) {
+            for (const receivedIndividual of receivedData.individualData) {
                 let found = false;
                 for (let dbIndividual of dbIndividualData) {
                     if (dbIndividual.entryKey == receivedIndividual.entryKey) {
@@ -356,11 +356,11 @@ function updateSheets(dbSheets, receivedData, sheetID) {
                 }
                 if (!found) newIndividualData.push(receivedIndividual)
             }
-            sheet.data[0] = [...dbIndividualData, ...newIndividualData];
+            sheet.data.individualData = [...dbIndividualData, ...newIndividualData];
             // group data
-            let dbGroupData = [...sheet.data[1]];
+            let dbGroupData = sheet.data.groupData != null ? [...sheet.data.groupData] : [];
             let newGroupData = [];
-            for (const receivedGroup of receivedData[1]) {
+            for (const receivedGroup of receivedData.groupData) {
                 let found = false;
                 for (let dbGroup of dbGroupData) {
                     if (dbGroup.groupName == receivedGroup.groupName) {
@@ -371,7 +371,7 @@ function updateSheets(dbSheets, receivedData, sheetID) {
                 }
                 if (!found) newGroupData.push(receivedGroup)
             }
-            sheet.data[1] = [...dbGroupData, ...newGroupData];
+            sheet.data.groupData = [...dbGroupData, ...newGroupData];
         }
         return qs.stringify(sheet);
     });
@@ -399,6 +399,6 @@ function copyStyleMap(targetStyleMap, sourceStyleMap) {
                 break;
             }
         }
-        if(!found) targetStyleMap.push(sourceStylePair);
+        if (!found) targetStyleMap.push(sourceStylePair);
     }
 }
