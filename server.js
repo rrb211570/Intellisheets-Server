@@ -366,7 +366,7 @@ function updateSheets(dbSheets, receivedData, sheetID) {
                 for (let dbGroup of dbGroupData) {
                     if (dbGroup.groupName == receivedGroup.groupName) {
                         if (!dbGroup.hasOwnProperty('styleMap')) dbGroup.styleMap = [];
-                        dbGroup.styleMap = copyStyleMap(dbGroup.styleMap, receivedGroup.styleMap);
+                        copyStyleMap(dbGroup.styleMap, receivedGroup.styleMap);
                         found = true;
                         break;
                     }
