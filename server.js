@@ -396,12 +396,11 @@ function copyStyleMap(targetStyleMap, sourceStyleMap) {
         let found = false;
         for (let targetStylePair of targetStyleMap) {
             if (targetStylePair[0] == sourceStylePair[0]) {
-                targetStylePair[1] == sourceStylePair[1];
+                targetStylePair[1] = sourceStylePair[1];
                 found = true;
                 break;
             }
         }
         if (!found) targetStyleMap.push(sourceStylePair);
     }
-    return targetStyleMap;
 }
