@@ -366,7 +366,7 @@ function updateSheets(dbSheets, receivedData, sheetID) {
                 for (let dbGroup of dbGroupData) {
                     if (dbGroup.groupName == receivedGroup.groupName) {
                         if (!dbGroup.hasOwnProperty('styleMap')) dbGroup.styleMap = [];
-                        copyStyleMap(dbGroup.styleMap, receivedGroup.styleMap);
+                        dbGroup.styleMap = copyStyleMap(dbGroup.styleMap, receivedGroup.styleMap);
                         found = true;
                         break;
                     }
@@ -403,4 +403,5 @@ function copyStyleMap(targetStyleMap, sourceStyleMap) {
         }
         if (!found) targetStyleMap.push(sourceStylePair);
     }
+    return targetStyleMap;
 }
