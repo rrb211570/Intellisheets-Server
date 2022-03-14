@@ -47,6 +47,10 @@ let userSchema = new Schema({
 });
 let User = mongoose.model('User', userSchema);
 
+app.get('/wakeServer', (req, res) => {
+    res.json({ status: 'success' })
+});
+
 app.get('/newUser/:username/:password', (req, res) => {
     const username = req.params.username;
     const password = req.params.password;
