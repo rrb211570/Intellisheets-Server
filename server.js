@@ -171,7 +171,7 @@ app.get('/login/:username/:password', (req, res) => {
                                             httpOnly: true,
                                             secure: true,
                                             sameSite: 'none',
-                                            expires: new Date(Date.now() + 1209600001),
+                                            expires: new Date(Date.now() + 1209600002),
                                             path: '/'
                                         });
                                         res.json({ status: 'success', context: 'logged in' });
