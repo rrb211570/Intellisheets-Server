@@ -116,7 +116,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                             res.cookie('access_token', access_token, {
                                 httpOnly: true,
                                 secure: true,
-                                SameSite: 'none',
+                                sameSite: 'none',
                                 expires: new Date(Date.now() + 1209600000)
                             });
                             res.json({ status: 'success', context: 'code confirmed' });
@@ -171,7 +171,7 @@ app.get('/login/:username/:password', (req, res) => {
                                         res.cookie('access_token', access_token, {
                                             httpOnly: true,
                                             secure: true,
-                                            SameSite: 'none',
+                                            sameSite: 'none',
                                             expires: new Date(Date.now() + 1209600000)
                                         });
                                         res.json({ status: 'success', context: 'logged in' });
