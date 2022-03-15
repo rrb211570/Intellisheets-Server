@@ -199,7 +199,11 @@ app.get('/logout', (req, res) => {
                 else {
                     let person = peopleFound[0];
                     jwt.verify(token, person.signatureSecret);
-                    res.clearCookie('access_token');
+                    res.clearCookie('access_token', {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'none',
+                    });
                     res.json({ status: 'success', context: "logged out" });
                 }
             }
