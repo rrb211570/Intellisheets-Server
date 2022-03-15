@@ -6,7 +6,6 @@ app.use(cors({
         'https://intellisheets.me'
     ],
     methods: ['GET', 'PUT', 'POST'],
-    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept'],
     credentials: true
 }));
 const bodyParser = require('body-parser')
