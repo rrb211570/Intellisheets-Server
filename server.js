@@ -171,7 +171,8 @@ app.get('/login/:username/:password', (req, res) => {
                                             httpOnly: true,
                                             secure: true,
                                             sameSite: 'none',
-                                            expires: new Date(Date.now() + 1209600000)
+                                            expires: new Date(Date.now() + 1209600000),
+                                            path: '/'
                                         });
                                         res.json({ status: 'success', context: 'logged in' });
                                     }
@@ -203,6 +204,7 @@ app.get('/logout', (req, res) => {
                         httpOnly: true,
                         secure: true,
                         sameSite: 'none',
+                        path: '/'
                     });
                     res.json({ status: 'success', context: "logged out" });
                 }
