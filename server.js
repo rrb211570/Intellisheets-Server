@@ -116,7 +116,7 @@ app.get('/confirmCode/:username/:registrationCode', (req, res) => {
                                 httpOnly: true,
                                 secure: true,
                                 sameSite: 'none',
-                                expires: new Date(Date.now() + 1209600000)
+                                expires: new Date(Date.now() + 1209600001)
                             });
                             res.json({ status: 'success', context: 'code confirmed' });
                         }
