@@ -1,4 +1,4 @@
-# sheetsServer
+# Intellisheets
 
 This is the server for Intellisheets (see sibling repo called 'Intellisheets-Client').
 
